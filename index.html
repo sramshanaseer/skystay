@@ -198,7 +198,7 @@ const isRoom=x=>x.t=='room'||x.t=='suite'||x.t=='penthouse',stars=()=>S.rs.reduc
 const cnt=t=>{let n=0;each(x=>{if(x.t==t)n++});return n},working=t=>{let n=0;each(x=>{if(x.t==t&&!x.br)n++});return n};
 function put(f,c,t){if(f+2>FL)FL=f+2;S.g[f][c]={t,f,c,occ:null,dirty:false,br:false,res:false,claim:null,busy:null,ds:0,bs:0,icons:null}}
 function fresh(){
- S={money:5000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
+ S={money:10000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
  FL=10;
 }
 function tops(k){k=k||'elev';const t={};for(let c=S.c0;c<S.c1;c++){if(S.g[0][c]&&S.g[0][c].t==k){let f=0;while(S.g[f+1][c]&&S.g[f+1][c].t==k)f++;t[c]=f}}return t}
