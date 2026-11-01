@@ -84,6 +84,7 @@ body.spec #spec{display:flex!important;gap:10px;align-items:center;border-color:
 body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body.spec #bhp,body.spec #blb{display:none!important}
 #clb .lr button{padding:4px 10px;font-size:13px}
 @media(max-width:640px){#goal,#info{display:none}.chip{padding:4px 7px;font-size:12px}}
+#blb,#mlbtn,#mmd{display:none!important}
 </style></head><body>
 <canvas id="cv"></canvas>
 <div class="ui" id="top">
@@ -884,7 +885,7 @@ function showMenu(){resetWorld();fresh();demoHotel();sync();rebuild();hud();inMe
 function enterGame(loadIt,nm,mode){resetWorld();fresh();if(nm)S.name=nm;if(mode)S.mode=mode;let ok=false;if(loadIt)ok=load();sync();rebuild();renderTabs();renderItems();hud();inMenu=false;document.body.classList.remove('inmenu');hud();cam.th=.32;cam.ph=1.2;cam.r=40;cam.tx=Math.max(14,(S.c0+S.c1)*CW/2);cam.ty=6;
  if(ok)toast('Welcome back to Skystay!');else setTimeout(showHelp,300)}
 let sure=0;
-$('mpl').onclick=()=>{if(hasSave()&&!sure){sure=1;$('mpl').textContent='Erase save & play?';setTimeout(()=>{sure=0;$('mpl').textContent='Play'},3000);return}sure=0;$('mpl').textContent='Play';$('mmd').classList.add('show');const ok=!!(LB.db&&LB.uid&&LB.canWrite!==false);$('mdsingle').disabled=false;$('mmp').disabled=!ok;$('mmpn').textContent=ok?'Compete on the shared hotel leaderboard.':'Multiplayer is not available in this version.'};
+$('mpl').onclick=()=>{if(hasSave()&&!sure){sure=1;$('mpl').textContent='Erase save & play?';setTimeout(()=>{sure=0;$('mpl').textContent='Play'},3000);return}sure=0;$('mpl').textContent='Play';pickMode('single')};
 let pendMode='single';const pickMode=m=>{pendMode=m;$('mmd').classList.remove('show');$('mnm').classList.add('show');$('nmi').value='';setTimeout(()=>$('nmi').focus(),50)};
 $('mdsingle').onclick=()=>pickMode('single');$('mmp').onclick=()=>pickMode('multi');$('mmc').onclick=()=>$('mmd').classList.remove('show');
 const nmOk=()=>{const n=$('nmi').value.trim().replace(/[<>]/g,'')||'Skystay';try{localStorage.removeItem(KEY)}catch(e){}$('mnm').classList.remove('show');enterGame(false,n,pendMode)};
