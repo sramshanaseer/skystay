@@ -95,7 +95,7 @@ body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body
  <span class="chip">🛏️ <b id="hr">0/0</b></span>
  <div class="sp">
   <button id="b0">⏸</button><button id="b1" class="on">1×</button><button id="b2">2×</button><button id="b3">3×</button>
-  <button id="bst">👥 Staff</button><button id="brv">⭐ Reviews</button><button id="bexl">◀ Buy land</button><button id="bex">Buy land ▶</button><button class="sndb" data-k="s" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button class="sndb" data-k="m" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button id="blb">🏆</button><button id="bmn">☰ Menu</button><button id="bhp">❓</button><button id="bzi">＋</button><button id="bzo">－</button>
+  <button id="bst">👥 Staff</button><button id="brv">⭐ Reviews</button><button id="bex">🏞️ Land</button><button class="sndb" data-k="s" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button class="sndb" data-k="m" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button id="blb">🏆</button><button id="bmn">☰ Menu</button><button id="bhp">❓</button><button id="bzi">＋</button><button id="bzo">－</button>
  </div>
 </div>
 <div class="ui chip" id="goal"></div><div class="ui chip" id="alarm"></div><div class="ui chip" id="spec"><span id="spect"></span><button id="specb">← Back to my hotel</button></div>
@@ -124,7 +124,7 @@ body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body
 "use strict";
 const $=id=>document.getElementById(id);
 const rnd=a=>a[Math.floor(Math.random()*a.length)],RR=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10,entC=null;function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,EC=()=>entC==null?S.c0:entC,PW=6,expCost=()=>Math.round(3000+(S.c1-S.c0-8)/PW*2000);
+const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10,entC=null;function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,EC=()=>entC==null?S.c0:entC,PW=6,lotOf=c=>Math.floor(c/PW),nLots=()=>Object.keys(S.lots).length,expCost=()=>Math.round(3000+Math.max(0,nLots()-2)*2000);
 const T={
  room:{n:'Room',e:'🛏️',c:400,u:4,l:2,cat:'Rooms',st:0,p:90,wall:'#a9b87c',d:'Standard room, $90 a night. Any floor — ground floor rooms need no elevator.'},
  suite:{n:'Suite',e:'🛋️',c:1100,u:10,l:2,cat:'Rooms',st:1,p:220,wall:'#9b7bb8',d:'Roomy suite. $220 a night. VIPs love them.'},
@@ -198,7 +198,7 @@ const isRoom=x=>x.t=='room'||x.t=='suite'||x.t=='penthouse',stars=()=>S.rs.reduc
 const cnt=t=>{let n=0;each(x=>{if(x.t==t)n++});return n},working=t=>{let n=0;each(x=>{if(x.t==t&&!x.br)n++});return n};
 function put(f,c,t){if(f+2>FL)FL=f+2;S.g[f][c]={t,f,c,occ:null,dirty:false,br:false,res:false,claim:null,busy:null,ds:0,bs:0,icons:null}}
 function fresh(){
- S={money:5000,day:1,hour:8,acc:0,speed:1,c0:0,c1:8,m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
+ S={money:5000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
  FL=10;
 }
 function tops(k){k=k||'elev';const t={};for(let c=S.c0;c<S.c1;c++){if(S.g[0][c]&&S.g[0][c].t==k){let f=0;while(S.g[f+1][c]&&S.g[f+1][c].t==k)f++;t[c]=f}}return t}
@@ -361,7 +361,7 @@ function rebuild(){
  // extended scenery along the whole plot
  {let q=0;const sr=n=>{q=(q*9301+49297+n*131)%233280;return q/233280};for(let x=Math.floor((X0()-30)/8)*8;x<=X1()+30;x+=8){if(x>=-24&&x<=48)continue;const g=new THREE.Group();g.position.set(x,-.3,DD/2+3.0);cyl(g,.07,3.0,'#222',0,0,0,6);sph(g,.22,G('#ffe9b0','#ffd070',1),0,3.1,0);bld.add(g);const h=new THREE.Group();h.position.set(x+3,-.3,DD/2+1);sph(h,.5,'#3f8a4a',0,.3,0);bld.add(h);if(sr(x)<.5){const t=new THREE.Group();t.position.set(x+4,-.3,-8-sr(x+1)*50);cyl(t,.35,2.4,'#6b4a2a',0,0,0,6);sph(t,1.7,crownMats[0],0,3.4,0);sph(t,1.2,crownMats[1],.9,3.0,.4);bld.add(t)}}}
  // land boundary markers and for-sale signs
- {const p0=X0(),p1=X1();for(const x of[p0,p1])for(const z of[-DD/2-.6,DD/2+2.2]){b(bld,.14,1.1,.14,'#c9a24a',x,-.3,z)}
+ {const p0=X0(),p1=X1();for(const kk of Object.keys(S.lots)){const lx=kk*PW*CW,lw=PW*CW;b(bld,lw-.1,.03,DD+3.6,'#9ccc86',lx+lw/2,-.31,.5);for(const x of[lx,lx+lw])for(const z of[-DD/2-.6,DD/2+2.2]){b(bld,.14,1.1,.14,'#c9a24a',x,-.3,z)}}
   for(const sd of[-1,1]){const x=sd<0?p0-5:p1+5,sg=label('FOR SALE  $'+expCost().toLocaleString(),4.2,.9,'#7a1f2b','#ffe9b0',40);sg.position.set(x,2.3,DD/2+1.2);bld.add(sg);b(bld,.14,2.0,.14,'#888',x-1.8,-.3,DD/2+1.1);b(bld,.14,2.0,.14,'#888',x+1.8,-.3,DD/2+1.1)}}
  // rooftop sign
  {const s=label((S.name||'Skystay').toUpperCase(),12,2.4,'#13141d','#e6c46a',200);let hh=0;each(x=>{hh=Math.max(hh,x.f)});s.position.set((S.c0+S.c1)*CW/2,(hh+1)*FH+2.9,DD/2+.2);bld.add(s);
@@ -673,13 +673,13 @@ function hud(){
  const s=stars();$('hs').innerHTML='<b>'+s.toFixed(1)+'</b> '+'★'.repeat(Math.round(s))+'<span style="opacity:.3">'+'★'.repeat(5-Math.round(s))+'</span>';
  let o=0,r=0;each(x=>{if(isRoom(x)){r++;if(x.occ)o++}});$('hr').textContent=o+'/'+r;
  const gi=GOALS.findIndex((g,i)=>!S.goals['g'+i]);$('goal').innerHTML=gi<0?'🏆 All goals done!':'🎯 <b>Goal:</b> '+GOALS[gi][0]+' <span style="color:var(--gd)">+$'+GOALS[gi][2]+'</span>';
- $('bex').textContent='Buy land ▶ ($'+expCost().toLocaleString()+')';$('bexl').textContent='◀ Buy land ($'+expCost().toLocaleString()+')';
+ $('bex').textContent='🏞️ Land ($'+expCost().toLocaleString()+')';
  renderItems(true);if(S.spec&&S.spec.d)specHud();
 }
 // ---------- build / interaction ----------
 function canPlace(tool,f,c,nm){
  const d=T[tool];if(!d)return 'Pick an item first.';
- if(f<0||c<S.c0||c>=S.c1)return 'Outside your land — use the Expand buttons to buy more.';if(S.g[f][c])return 'That cell is taken.';
+ if(f<0||!S.lots[lotOf(c)])return 'You do not own this land — open 🏞️ Land and buy this lot first.';if(S.g[f][c])return 'That cell is taken.';
  if(stars()<d.st)return 'Needs '+d.st+'★ rating.';
  if(d.l==0&&f!=0)return d.n+' goes on the ground floor.';if(d.l==1&&f==0)return d.n+' goes on upper floors.';
  if(tool=='penthouse'&&f<2)return 'Penthouses go on floor 3 or higher.';
@@ -774,17 +774,37 @@ function showRev(){
 ['mst','mrv','mlb'].forEach(id=>$(id).addEventListener('pointerdown',e=>{if(e.target.id==id)$(id).classList.remove('show')}));
 $('bst').onclick=showStaff;$('brv').onclick=showRev;
 [0,1,2,3].forEach(i=>$('b'+i).onclick=()=>{S.speed=i;[0,1,2,3].forEach(j=>$('b'+j).classList.toggle('on',j==i))});
-const doExpand=side=>{if(S.spec)return;const c=expCost();if(S.money<c){toast('This land plot costs $'+c.toLocaleString(),'bad');return}S.money-=c;if(side<0){S.c0-=PW;cam.tx=Math.min(cam.tx,(S.c0+S.c1)*CW/2)}else{S.c1+=PW;cam.tx=Math.max(cam.tx,(S.c0+S.c1)*CW/2)}rebuild();updateGhosts();hud();save();toast('🏞️ Land plot bought on the '+(side<0?'left':'right')+'! You now own '+(S.c1-S.c0)+' lots of building space.')};
-$('bex').onclick=()=>doExpand(1);$('bexl').onclick=()=>doExpand(-1);
-function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Main entrance</b>: nothing is built for you. Start in the Service tab: build a Main entrance on the ground floor first, because guests only arrive once it exists. Then add a reception, rooms and staff.','<b>Land</b>: use the Buy land buttons to purchase a whole plot of 6 lots on the left or right. Each plot costs more than the last, and you can keep buying as long as you have the money — build separate towers on each.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
+function setExt(){const k=Object.keys(S.lots).map(Number);if(!k.length){S.lots={0:1,1:1};return setExt()}S.c0=Math.min(...k)*PW;S.c1=(Math.max(...k)+1)*PW}
+function lotsFromRange(a,b){const o={};for(let k=Math.floor(a/PW);k<Math.ceil(b/PW);k++)o[k]=1;return o}
+let landOff=null;
+function buyLot(k){if(S.spec||S.lots[k])return;const c=expCost();if(S.money<c){toast('This lot costs $'+c.toLocaleString(),'bad');return}S.money-=c;S.lots[k]=1;setExt();rebuild();updateGhosts();hud();save();toast('🏞️ Lot '+k+' bought! You now own '+nLots()+' lots.')}
+function showLand(){
+ const mid=Math.floor(cam.tx/(PW*CW));if(landOff==null)landOff=mid;
+ const box=$('cst');box.textContent='';const h=document.createElement('h2');h.textContent='🏞️ Buy land';box.appendChild(h);
+ const p=document.createElement('p');p.style.cssText='margin:0 0 8px;color:var(--mu)';p.textContent='Buy a lot anywhere on the map (each lot is 6 building cells wide). Next lot: $'+expCost().toLocaleString()+' — the price goes up with every lot you own. Tap a green lot to fly there.';box.appendChild(p);
+ const nav=document.createElement('div');nav.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px';
+ const nb=(t,fn)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='padding:6px 10px';b.onclick=fn;nav.appendChild(b)};
+ nb('◀◀',()=>{landOff-=15;showLand()});nb('◀',()=>{landOff-=5;showLand()});nb('My land',()=>{landOff=Math.floor((S.c0+S.c1)/2/PW);showLand()});nb('▶',()=>{landOff+=5;showLand()});nb('▶▶',()=>{landOff+=15;showLand()});
+ const inp=document.createElement('input');inp.type='number';inp.placeholder='Go to lot #';inp.style.cssText='width:110px;padding:6px;border-radius:8px;border:1px solid var(--ln);background:#0e1119;color:var(--tx)';
+ inp.onkeydown=e=>{if(e.key=='Enter'&&inp.value!==''){landOff=Math.max(-900,Math.min(900,Math.floor(+inp.value)));showLand()}};nav.appendChild(inp);box.appendChild(nav);
+ const g=document.createElement('div');g.style.cssText='display:grid;grid-template-columns:repeat(5,1fr);gap:6px';
+ for(let k=landOff-7;k<=landOff+7;k++){const own=!!S.lots[k],b=document.createElement('button');
+  b.style.cssText='padding:8px 4px;line-height:1.25;border:2px solid '+(own?'#58c27d':'var(--ln)')+';background:'+(own?'#1d3a2a':'#161b27');
+  const a=document.createElement('b');a.textContent='Lot '+k;const br=document.createElement('br');const t=document.createElement('small');t.textContent=own?'✓ yours':'$'+expCost().toLocaleString();
+  b.append(a,br,t);b.onclick=()=>{if(own){cam.tx=(k*PW+PW/2)*CW;cam.ty=5;$('mst').classList.remove('show')}else{buyLot(k);showLand()}};g.appendChild(b)}
+ box.appendChild(g);
+ const cl=document.createElement('div');cl.style.cssText='text-align:right;margin-top:10px';const cb=document.createElement('button');cb.textContent='Close';cb.onclick=()=>$('mst').classList.remove('show');cl.appendChild(cb);box.appendChild(cl);
+ $('mst').classList.add('show')}
+$('bex').onclick=()=>{landOff=null;showLand()};
+function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Main entrance</b>: nothing is built for you. Start in the Service tab: build a Main entrance on the ground floor first, because guests only arrive once it exists. Then add a reception, rooms and staff.','<b>Land</b>: tap 🏞️ Land to see the map of lots. You can buy any lot anywhere — next to your hotel or far away — and each lot is 6 building cells wide. Each lot costs more than the last. Tap one of your own lots to fly the camera there.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
 $('bhp').onclick=showHelp;
 $('bzi').onclick=()=>cam.r=clamp(cam.r*.85,10,400);$('bzo').onclick=()=>cam.r=clamp(cam.r*1.18,10,400);
 addEventListener('keydown',e=>{if(e.key=='Escape'){S.tool=null;renderTabs();renderItems();say('Browsing.')}});
 
 // ---------- save / load ----------
-function save(){if(inMenu||S.spec)return;try{localStorage.setItem(KEY,JSON.stringify({name:S.name,mode:S.mode,money:S.money,day:S.day,hour:S.hour,m0:S.m0,c0:S.c0,c1:S.c1,rate:S.rate,fast:S.fast,sprink:S.sprink,rs:S.rs,staff:S.staff,goals:S.goals,reviews:S.reviews.slice(0,25),cells:(()=>{const a=[];each(x=>a.push([x.f,x.c,x.t,x.occ,x.dirty,x.br,x.up||null]));return a})()}))}catch(e){}}
+function save(){if(inMenu||S.spec)return;try{localStorage.setItem(KEY,JSON.stringify({name:S.name,mode:S.mode,money:S.money,day:S.day,hour:S.hour,m0:S.m0,c0:S.c0,c1:S.c1,lots:Object.keys(S.lots).map(Number),rate:S.rate,fast:S.fast,sprink:S.sprink,rs:S.rs,staff:S.staff,goals:S.goals,reviews:S.reviews.slice(0,25),cells:(()=>{const a=[];each(x=>a.push([x.f,x.c,x.t,x.occ,x.dirty,x.br,x.up||null]));return a})()}))}catch(e){}}
 function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(!j||!j.cells)return false;
- S.name=j.name||'Skystay';S.mode=j.mode=='multi'?'multi':'single';S.money=j.money;S.day=j.day;S.hour=j.hour;S.m0=j.m0??new Date().getMonth();S.c0=j.c0??0;S.c1=j.c1??j.NC??8;S.rate=j.rate||1;S.fast=!!j.fast;S.sprink=!!j.sprink;S.rs=j.rs&&j.rs.length?j.rs:S.rs;S.staff=j.staff;S.goals=j.goals||{};S.reviews=j.reviews||[];
+ S.name=j.name||'Skystay';S.mode=j.mode=='multi'?'multi':'single';S.money=j.money;S.day=j.day;S.hour=j.hour;S.m0=j.m0??new Date().getMonth();S.lots=Array.isArray(j.lots)&&j.lots.length?Object.fromEntries(j.lots.map(k=>[k,1])):lotsFromRange(j.c0??0,j.c1??j.NC??8);setExt();S.rate=j.rate||1;S.fast=!!j.fast;S.sprink=!!j.sprink;S.rs=j.rs&&j.rs.length?j.rs:S.rs;S.staff=j.staff;S.goals=j.goals||{};S.reviews=j.reviews||[];
  S.g=mkg();FL=10;j.cells.forEach(a=>{put(a[0],a[1],a[2]);const x=S.g[a[0]][a[1]];x.occ=a[3];x.dirty=a[4];x.br=a[5];x.up=a[6]||null;x.ds=S.day;x.bs=S.day});return true}catch(e){return false}}
 
 // ---------- main loop ----------
@@ -855,13 +875,13 @@ const layoutCells=()=>{const a=[];each(x=>{a.push([x.f,x.c,x.t,x.occ?(x.occ.vip?
 async function maybeLayout(force){
  if(!LB.db||!LB.uid||LB.canWrite===false||inMenu||S.spec||S.mode!='multi'||layoutBusy)return;
  if(!force&&Date.now()-layoutLast<5000)return;
- const cells=layoutCells(),sig=JSON.stringify([cells,S.staff,S.c0,S.c1,!!S.fast,!!S.sprink]);if(!force&&sig===layoutSig)return;
+ const cells=layoutCells(),sig=JSON.stringify([cells,S.staff,Object.keys(S.lots).join(),!!S.fast,!!S.sprink]);if(!force&&sig===layoutSig)return;
  layoutBusy=true;layoutLast=Date.now();
- try{await LB.db.doc('layouts/'+LB.uid).set({name:String(S.name||'Skystay').slice(0,18),c0:S.c0,c1:S.c1,NC:S.c1,m0:S.m0,day:S.day,hour:S.hour,stars:+stars().toFixed(2),money:Math.round(S.money),fast:!!S.fast,sprink:!!S.sprink,staff:S.staff,cells,at:Date.now()});layoutSig=sig}
+ try{await LB.db.doc('layouts/'+LB.uid).set({name:String(S.name||'Skystay').slice(0,18),c0:S.c0,c1:S.c1,NC:S.c1,lots:Object.keys(S.lots).map(Number).slice(0,400),m0:S.m0,day:S.day,hour:S.hour,stars:+stars().toFixed(2),money:Math.round(S.money),fast:!!S.fast,sprink:!!S.sprink,staff:S.staff,cells,at:Date.now()});layoutSig=sig}
  catch(e){if(e&&e.code=='invalid_argument')LB.canWrite=false}
  layoutBusy=false}
 function applyLayout(d,first){
- S.m0=Number.isInteger(+d.m0)&&+d.m0>=0&&+d.m0<12?+d.m0:S.m0;S.c0=Math.max(-3000,Math.min(0,Math.floor(+d.c0||0)));S.c1=Math.min(3000,Math.max(8,Math.floor(+d.c1||+d.NC||8)));const want={};(d.cells||[]).forEach(a=>{if(Array.isArray(a)&&T[a[2]]||a&&a[2]=='hall')want[a[0]+','+a[1]]=a});
+ S.m0=Number.isInteger(+d.m0)&&+d.m0>=0&&+d.m0<12?+d.m0:S.m0;S.lots=Array.isArray(d.lots)&&d.lots.length?Object.fromEntries(d.lots.slice(0,400).map(k=>[Math.max(-900,Math.min(900,Math.floor(+k)||0)),1])):lotsFromRange(Math.max(-3000,Math.min(0,Math.floor(+d.c0||0))),Math.min(3000,Math.max(8,Math.floor(+d.c1||+d.NC||8))));setExt();const want={};(d.cells||[]).forEach(a=>{if(Array.isArray(a)&&T[a[2]]||a&&a[2]=='hall')want[a[0]+','+a[1]]=a});
  let changed=false;const nn=String(d.name||'Hotel').slice(0,18);if(S.name!==nn){S.name=nn;changed=true}each(x=>{if(!want[x.f+','+x.c]){S.g[x.f][x.c]=null;changed=true}});
  for(const k in want){const a=want[k],f=a[0],c=a[1];if(!(f>=0&&f<500)||c<S.c0||c>=S.c1)continue;let x=S.g[f][c];
   if(!x||x.t!==a[2]){put(f,c,a[2]);x=S.g[f][c];changed=true}
@@ -887,7 +907,7 @@ function openLB(){$('mlb').classList.add('show');renderLB()}
 // ---------- title screen ----------
 const hasSave=()=>{try{return !!localStorage.getItem(KEY)}catch(e){return false}};
 function resetWorld(){if(LB.specUnsub){LB.specUnsub();LB.specUnsub=null}$('spec').style.display='';document.body.classList.remove('spec');clear(peopleG);for(const k in cars)delete cars[k];if(S){for(const v of S.veh)scene.remove(v.m);for(const f of S.fx)if(f.el)f.el.remove()}clear(ghostG);$('alarm').style.display='none'}
-function demoHotel(){S.rs=[5,5,4,5,4];S.money=1e6;S.hour=17;S.c1=10;const L=(f,c,t)=>{if(!S.g[f][c])put(f,c,t)};
+function demoHotel(){S.rs=[5,5,4,5,4];S.money=1e6;S.hour=17;S.lots={0:1,1:1};setExt();const L=(f,c,t)=>{if(!S.g[f][c])put(f,c,t)};
  L(0,0,'hall');L(0,1,'hall');L(0,2,'hall');L(0,3,'elev');L(1,3,'elev');L(0,4,'reception');L(0,5,'laundry');L(0,6,'cafe');L(0,7,'shop');L(0,8,'reception');L(0,9,'stairs');L(1,9,'stairs');L(2,9,'stairs');L(3,9,'stairs');L(2,3,'elev');L(3,3,'elev');
  for(let c=4;c<=8;c++){L(1,c,c==4?'room':'suite');L(2,c,'suite')}
  L(3,4,'gym');L(3,5,'spa');L(3,6,'pool');L(3,7,'penthouse');L(3,8,'penthouse');
