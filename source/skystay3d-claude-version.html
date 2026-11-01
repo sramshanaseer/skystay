@@ -112,7 +112,7 @@ body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body
 "use strict";
 const $=id=>document.getElementById(id);
 const rnd=a=>a[Math.floor(Math.random()*a.length)],RR=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10,entC=null,ents=[];function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,EC=()=>entC==null?S.c0:entC,PW=6,lotOf=c=>Math.floor(c/PW),nLots=()=>Object.keys(S.lots).length,expCost=()=>Math.round(3000+Math.max(0,nLots()-2)*2000);
+const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10,entC=null,ents=[],signs=[];function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,EC=()=>entC==null?S.c0:entC,PW=6,lotOf=c=>Math.floor(c/PW),nLots=()=>Object.keys(S.lots).length,expCost=()=>Math.round(3000+Math.max(0,nLots()-2)*2000);
 const T={
  room:{n:'Room',e:'🛏️',c:400,u:4,l:2,cat:'Rooms',st:0,p:90,wall:'#a9b87c',d:'Standard room, $90 a night. Any floor — ground floor rooms need no elevator.'},
  suite:{n:'Suite',e:'🛋️',c:1100,u:10,l:2,cat:'Rooms',st:1,p:220,wall:'#9b7bb8',d:'Roomy suite. $220 a night. VIPs love them.'},
@@ -301,7 +301,7 @@ function cellMesh(cl){
  }else if(t=='hall'){
   b(g,CW-.2,.03,2.0,'#8a1f2b',0,0,.5);b(g,1.5,.4,.7,'#2a3f6a',-.4,0,-1.6);b(g,1.5,.6,.15,'#2a3f6a',-.4,.4,-1.95);cyl(g,.3,.55,'#d9c9a0',1.1,0,-1.5,16);sph(g,.45,'#3c8a50',1.1,1.2,-1.5);
   for(let i=0;i<3;i++)sph(g,.2,G('#ffe3a0','#ffcc66',1),-1.0+i*1.0,3.0,0);
-  if(ents.includes(cl.c)){const s=label(hotelName(cl.c).toUpperCase(),2.4,.55,'#1a1a24','#e6c46a',46);s.position.set(0,2.4,-2.1);g.add(s)}
+  if(ents.includes(cl.c)){const s=label(hotelName(cl.c).toUpperCase(),2.4,.55,'#1a1a24','#e6c46a',46);s.position.set(0,2.4,-2.1);g.add(s);signs.push({o:s,e:cl.c})}
  }
  if(cl.c>0&&false){}
  // status icons
@@ -334,7 +334,7 @@ function mergeStatic(root,skip){
  for(const o of dead){if(o.parent)o.parent.remove(o);if(o.geometry!==BG&&!o.geometry.userData.keep)o.geometry.dispose()}
 }
 function rebuild(){
- ents=[];for(let c=S.c0;c<S.c1;c++){const x=S.g[0][c],pv=S.g[0][c-1];if(x&&x.t=='hall'&&!(pv&&pv.t=='hall'))ents.push(c)}entC=ents.length?ents[0]:null;
+ ents=[];signs=[];for(let c=S.c0;c<S.c1;c++){const x=S.g[0][c],pv=S.g[0][c-1];if(x&&x.t=='hall'&&!(pv&&pv.t=='hall'))ents.push(c)}entC=ents.length?ents[0]:null;
  clear(bld);glows.length=0;waters.length=0;
  const tp=tops(),topF={};
  const skipN=[];each(cl=>{const m=cellMesh(cl);m.traverse(o=>{if(o.userData.water)waters.push(o)});if(cl.door)skipN.push(cl.door);bld.add(m);cl.mesh=m;if(cl.f>(topF[cl.c]??-1))topF[cl.c]=cl.f});
@@ -355,7 +355,7 @@ function rebuild(){
  {const grp=ents.length>1?ents.map(e=>({e,lo:1e9,hi:-1e9,hh:0})):[{e:ents[0]??null,lo:S.c0,hi:S.c1-1,hh:0}];
   if(ents.length>1)each(x=>{const e=hotelCol(x.c),g=grp.find(q=>q.e===e);if(g){g.lo=Math.min(g.lo,x.c);g.hi=Math.max(g.hi,x.c);g.hh=Math.max(g.hh,x.f)}});
   else each(x=>{grp[0].hh=Math.max(grp[0].hh,x.f)});
-  for(const g of grp){if(g.lo>g.hi)continue;const hh=g.hh,mx=(g.lo+g.hi+1)*CW/2;const s=label((g.e==null?(S.name||'Skystay'):hotelName(g.e)).toUpperCase(),12,2.4,'#13141d','#e6c46a',200);s.position.set(mx,(hh+1)*FH+2.9,DD/2+.2);bld.add(s);
+  for(const g of grp){if(g.lo>g.hi)continue;const hh=g.hh,mx=(g.lo+g.hi+1)*CW/2;const s=label((g.e==null?(S.name||'Skystay'):hotelName(g.e)).toUpperCase(),12,2.4,'#13141d','#e6c46a',200);s.position.set(mx,(hh+1)*FH+2.9,DD/2+.2);bld.add(s);signs.push({o:s,e:g.e});
    b(bld,.2,2.8,.2,'#888',mx-4.5,(hh+1)*FH+.35,DD/2+.1);b(bld,.2,2.8,.2,'#888',mx+4.5,(hh+1)*FH+.35,DD/2+.1)}}
  // elevator cars
  for(const c in cars){if(!tp[c]){peopleG.remove(cars[c].m);delete cars[c]}}
@@ -718,7 +718,7 @@ cv.addEventListener('pointermove',e=>{
  if(Math.hypot(e.clientX-p.sx,e.clientY-p.sy)>6)drag=1;
  if(drag){if(p.pan){const k=cam.r*.0016;cam.tx-=dx*k*Math.cos(cam.th);cam.ty+=dy*k;cam.tx=clamp(cam.tx,X0()-40,X1()+40);cam.ty=clamp(cam.ty,1,FL*FH+20)}else{cam.th=clamp(cam.th-dx*.006,-1.35,1.35);cam.ph=clamp(cam.ph-dy*.005,.55,1.55)}}
  else hover(e.clientX,e.clientY)});
-cv.addEventListener('pointerup',e=>{const p=ptrs.get(e.pointerId);ptrs.delete(e.pointerId);if(p&&!drag&&ptrs.size==0&&!inMenu){const c=cellAt(e.clientX,e.clientY);if(c){hov=c;click(c.f,c.c)}}});
+cv.addEventListener('pointerup',e=>{const p=ptrs.get(e.pointerId);ptrs.delete(e.pointerId);if(p&&!drag&&ptrs.size==0&&!inMenu){if(!S.spec&&!S.tool&&signs.length){v2.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(v2,camera);const h=ray.intersectObjects(signs.map(q=>q.o),false);if(h.length){const q=signs.find(q=>q.o===h[0].object);if(q){askHotelName(q.e);return}}}const c=cellAt(e.clientX,e.clientY);if(c){hov=c;click(c.f,c.c)}}});
 cv.addEventListener('pointercancel',e=>ptrs.delete(e.pointerId));
 cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=clamp(cam.r*(1+e.deltaY*.001),10,400)},{passive:false});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
@@ -934,11 +934,11 @@ function enterGame(loadIt,nm,mode){resetWorld();fresh();if(nm)S.name=nm;if(mode)
 let sure=0;
 $('mpl').onclick=()=>{if(hasSave()&&!sure){sure=1;$('mpl').textContent='Erase save & play?';setTimeout(()=>{sure=0;$('mpl').textContent='Play'},3000);return}sure=0;$('mpl').textContent='Play';$('mmd').classList.add('show');const ok=!!(LB.db&&LB.uid&&LB.canWrite!==false);$('mdsingle').disabled=false;$('mmp').disabled=!ok;$('mmpn').textContent=ok?'Compete on the shared hotel leaderboard.':'Needs this page opened from its shared link while signed in, with Contributor access.'};
 let pendMode='single',pendHn=null;const nmH2=()=>document.querySelector('#mnm h2');
-function askHotelName(e){pendHn=e;nmH2().textContent='Name this hotel:';$('mnm').classList.add('show');$('nmi').value=hotelName(e);setTimeout(()=>{$('nmi').focus();$('nmi').select()},50)}
+function askHotelName(e){if(S.spec)return;pendHn=e==null?-1:e;nmH2().textContent='Name this hotel:';$('mnm').classList.add('show');$('nmi').value=e==null?(S.name||'Skystay'):hotelName(e);setTimeout(()=>{$('nmi').focus();$('nmi').select()},50)}
 const pickMode=m=>{pendHn=null;nmH2().textContent='Enter a name for your hotel:';pendMode=m;$('mmd').classList.remove('show');$('mnm').classList.add('show');$('nmi').value='';setTimeout(()=>$('nmi').focus(),50)};
 $('mdsingle').onclick=()=>pickMode('single');$('mmp').onclick=()=>pickMode('multi');$('mmc').onclick=()=>$('mmd').classList.remove('show');
-const nmOk=()=>{if(pendHn!=null){const e=pendHn,n=$('nmi').value.trim().replace(/[<>]/g,'').slice(0,18)||hotelName(e);pendHn=null;$('mnm').classList.remove('show');if(e===ents[0])S.name=n;else S.hn[e]=n;rebuild();hud();save();toast('Hotel named “'+n+'”');return}const n=$('nmi').value.trim().replace(/[<>]/g,'')||'Skystay';try{localStorage.removeItem(KEY)}catch(e){}$('mnm').classList.remove('show');enterGame(false,n,pendMode)};
-$('nok').onclick=nmOk;$('ncn').onclick=()=>{pendHn=null;$('mnm').classList.remove('show')};$('nmi').addEventListener('keydown',e=>{if(e.key=='Enter')nmOk();if(e.key=='Escape'){pendHn=null;$('mnm').classList.remove('show')}e.stopPropagation()});
+const nmOk=()=>{if(pendHn!=null){const e=pendHn,n=$('nmi').value.trim().replace(/[<>]/g,'').slice(0,18)||(e==-1?S.name:hotelName(e));pendHn=null;$('mnm').classList.remove('show');if(e==-1||e===ents[0])S.name=n;else S.hn[e]=n;rebuild();hud();save();toast('Hotel named “'+n+'”');return}const n=$('nmi').value.trim().replace(/[<>]/g,'')||'Skystay';try{localStorage.removeItem(KEY)}catch(e){}$('mnm').classList.remove('show');enterGame(false,n,pendMode)};
+$('nok').onclick=nmOk;$('logo').style.cursor='pointer';$('logo').title='Tap to rename your hotel';$('logo').onclick=()=>{if(!inMenu&&!S.spec)askHotelName(ents.length?ents[0]:null)};$('ncn').onclick=()=>{pendHn=null;$('mnm').classList.remove('show')};$('nmi').addEventListener('keydown',e=>{if(e.key=='Enter')nmOk();if(e.key=='Escape'){pendHn=null;$('mnm').classList.remove('show')}e.stopPropagation()});
 $('ml').onclick=()=>enterGame(true);$('mhp').onclick=showHelp;
 $('mcr').onclick=()=>{$('cst').innerHTML='<h2>Credits</h2><div class="row"><div class="g"><b>Skystay Hotel Tycoon</b><br>Original game built with three.js. All art, characters and code are original, inspired by classic hotel-management games.</div></div><div class="row"><div class="g"></div><button id="cl">Close</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')};
 $('bmn').onclick=()=>{save();showMenu()};
