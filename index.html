@@ -192,7 +192,7 @@ function icon(e,s){let t=icoC[e];if(!t){const c=document.createElement('canvas')
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));sp.scale.set(s||.9,s||.9,1);sp.renderOrder=10;return sp}
 
 // ---------- state ----------
-let S,bld=new THREE.Group(),peopleG=new THREE.Group(),extraG=new THREE.Group();scene.add(bld,peopleG,extraG);
+let S,bld=new THREE.Group(),landG=new THREE.Group(),peopleG=new THREE.Group(),extraG=new THREE.Group();scene.add(bld,peopleG,extraG,landG);
 const colX=c=>c*CW+CW/2,each=fn=>{for(let f=0;f<FL;f++){const row=S.g[f];for(let c=S.c0;c<S.c1;c++){const x=row[c];if(x)fn(x)}}};
 const isRoom=x=>x.t=='room'||x.t=='suite'||x.t=='penthouse',stars=()=>S.rs.reduce((a,b)=>a+b,0)/S.rs.length;
 const cnt=t=>{let n=0;each(x=>{if(x.t==t)n++});return n},working=t=>{let n=0;each(x=>{if(x.t==t&&!x.br)n++});return n};
@@ -361,8 +361,7 @@ function rebuild(){
  // extended scenery along the whole plot
  {let q=0;const sr=n=>{q=(q*9301+49297+n*131)%233280;return q/233280};for(let x=Math.floor((X0()-30)/8)*8;x<=X1()+30;x+=8){if(x>=-24&&x<=48)continue;const g=new THREE.Group();g.position.set(x,-.3,DD/2+3.0);cyl(g,.07,3.0,'#222',0,0,0,6);sph(g,.22,G('#ffe9b0','#ffd070',1),0,3.1,0);bld.add(g);const h=new THREE.Group();h.position.set(x+3,-.3,DD/2+1);sph(h,.5,'#3f8a4a',0,.3,0);bld.add(h);if(sr(x)<.5){const t=new THREE.Group();t.position.set(x+4,-.3,-8-sr(x+1)*50);cyl(t,.35,2.4,'#6b4a2a',0,0,0,6);sph(t,1.7,crownMats[0],0,3.4,0);sph(t,1.2,crownMats[1],.9,3.0,.4);bld.add(t)}}}
  // land boundary markers and for-sale signs
- {const p0=X0(),p1=X1();for(const kk of Object.keys(S.lots)){const lx=kk*PW*CW,lw=PW*CW;b(bld,lw-.1,.03,DD+3.6,'#9ccc86',lx+lw/2,-.31,.5);for(const x of[lx,lx+lw])for(const z of[-DD/2-.6,DD/2+2.2]){b(bld,.14,1.1,.14,'#c9a24a',x,-.3,z)}}
-  for(const sd of[-1,1]){const x=sd<0?p0-5:p1+5,sg=label('FOR SALE  $'+expCost().toLocaleString(),4.2,.9,'#7a1f2b','#ffe9b0',40);sg.position.set(x,2.3,DD/2+1.2);bld.add(sg);b(bld,.14,2.0,.14,'#888',x-1.8,-.3,DD/2+1.1);b(bld,.14,2.0,.14,'#888',x+1.8,-.3,DD/2+1.1)}}
+ {const p0=X0(),p1=X1();for(const kk of Object.keys(S.lots)){const lx=kk*PW*CW,lw=PW*CW;b(bld,lw-.1,.03,DD+3.6,'#9ccc86',lx+lw/2,-.31,.5);for(const x of[lx,lx+lw])for(const z of[-DD/2-.6,DD/2+2.2]){b(bld,.14,1.1,.14,'#c9a24a',x,-.3,z)}}}
  // rooftop sign
  {const s=label((S.name||'Skystay').toUpperCase(),12,2.4,'#13141d','#e6c46a',200);let hh=0;each(x=>{hh=Math.max(hh,x.f)});s.position.set((S.c0+S.c1)*CW/2,(hh+1)*FH+2.9,DD/2+.2);bld.add(s);
   const m1=b(bld,.2,2.8,.2,'#888',(S.c0+S.c1)*CW/2-4.5,(hh+1)*FH+.35,DD/2+.1),m2=b(bld,.2,2.8,.2,'#888',(S.c0+S.c1)*CW/2+4.5,(hh+1)*FH+.35,DD/2+.1)}
@@ -730,7 +729,7 @@ cv.addEventListener('pointerup',e=>{const p=ptrs.get(e.pointerId);ptrs.delete(e.
 cv.addEventListener('pointercancel',e=>ptrs.delete(e.pointerId));
 cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=clamp(cam.r*(1+e.deltaY*.001),10,400)},{passive:false});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-function click(f,c){if(S.tool){place(f,c)}else inspect(f,c,true)}
+function click(f,c){if(!S.spec&&f>=0&&f<3&&!S.lots[lotOf(c)]){askBuy(lotOf(c));return}if(S.tool){place(f,c)}else inspect(f,c,true)}
 function describe(x){let s=T[x.t].n;if(isRoom(x)){s+=x.occ?' — '+x.occ.look.name+(x.occ.vip?' (VIP)':'')+', '+x.occ.stay+' night'+(x.occ.stay>1?'s':'')+' left':x.dirty?' — dirty':x.br?' — broken':' — vacant'}else if(x.br)s+=' — broken';if(x.t=='reception'){s+=' — '+(S.pp.some(p=>p.role=='rec'&&p.stat&&desks()[p.idx]===x)?'staffed':'no receptionist')}if(x.t=='cafe')s+=S.pp.some(p=>p.role=='wait'&&cafes()[p.idx]===x)?' — waiter on duty':' — needs a waiter';return s}
 function inspect(f,c,set){const x=S.g[f]&&S.g[f][c];const s=x?describe(x):'Empty cell (floor '+(f+1)+')';$('info').textContent=s;if(set)say(s)}
 function hover(cx,cy){if(inMenu)return;
@@ -774,6 +773,24 @@ function showRev(){
 ['mst','mrv','mlb'].forEach(id=>$(id).addEventListener('pointerdown',e=>{if(e.target.id==id)$(id).classList.remove('show')}));
 $('bst').onclick=showStaff;$('brv').onclick=showRev;
 [0,1,2,3].forEach(i=>$('b'+i).onclick=()=>{S.speed=i;[0,1,2,3].forEach(j=>$('b'+j).classList.toggle('on',j==i))});
+let lotView='';
+function updateLots(){clear(landG);const mid=Math.floor(cam.tx/(PW*CW));lotView=mid+':'+nLots();
+ for(let k=mid-6;k<=mid+6;k++){if(S.lots[k])continue;const lx=k*PW*CW,lw=PW*CW,cx=lx+lw/2;
+  b(landG,lw-.2,.05,DD+3.6,'#8a7a58',cx,-.31,.5);
+  for(let i=0;i<=PW;i++)for(const z of[-DD/2-.6,DD/2+2.2])b(landG,.12,.9,.12,'#7a5a36',lx+i*CW,-.3,z);
+  for(const z of[-DD/2-.6,DD/2+2.2]){b(landG,lw,.08,.06,'#8a6a40',cx,.15,z);b(landG,lw,.08,.06,'#8a6a40',cx,.55,z)}
+  for(const x of[lx,lx+lw]){b(landG,.06,.08,DD+2.8,'#8a6a40',x,.15,.8);b(landG,.06,.08,DD+2.8,'#8a6a40',x,.55,.8)}
+  let q=Math.abs(k*7919+13);const rr=()=>{q=(q*9301+49297)%233280;return q/233280};
+  for(let i=0;i<6;i++){const x=lx+.8+rr()*(lw-1.6),z=-1.5+rr()*5;sph(landG,.25+rr()*.3,'#4f7a3a',x,.1,z)}
+  for(let i=0;i<3;i++){const x=lx+.8+rr()*(lw-1.6),z=-1.5+rr()*5;b(landG,.5,.3,.4,'#8d8d94',x,-.3,z)}
+  const sg=label('🔒 LOT '+k+'   $'+expCost().toLocaleString(),4.4,.9,'#3a2a14','#ffe9b0',40);sg.position.set(cx,2.2,DD/2+1.0);landG.add(sg);b(landG,.12,2.0,.12,'#777',cx-2,-.3,DD/2+.95);b(landG,.12,2.0,.12,'#777',cx+2,-.3,DD/2+.95)}
+ mergeStatic(landG,[])}
+function askBuy(k){const box=$('cst');box.textContent='';const h=document.createElement('h2');h.textContent='🔒 Locked land — Lot '+k;box.appendChild(h);
+ const c=expCost(),p=document.createElement('p');p.style.cssText='margin:0 0 12px;color:var(--mu)';p.textContent='This empty lot is 6 building cells wide. Buy it to build on it. Price: $'+c.toLocaleString()+' (the price rises with every lot you own).';box.appendChild(p);
+ const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;justify-content:flex-end';
+ const ok=document.createElement('button');ok.textContent=S.money>=c?'Buy for $'+c.toLocaleString():'Not enough cash';ok.disabled=S.money<c;ok.style.cssText='padding:8px 14px;border:2px solid #58c27d';ok.onclick=()=>{$('mst').classList.remove('show');buyLot(k)};
+ const no=document.createElement('button');no.textContent='Cancel';no.style.cssText='padding:8px 14px';no.onclick=()=>$('mst').classList.remove('show');
+ row.append(no,ok);box.appendChild(row);$('mst').classList.add('show')}
 function setExt(){const k=Object.keys(S.lots).map(Number);if(!k.length){S.lots={0:1,1:1};return setExt()}S.c0=Math.min(...k)*PW;S.c1=(Math.max(...k)+1)*PW}
 function lotsFromRange(a,b){const o={};for(let k=Math.floor(a/PW);k<Math.ceil(b/PW);k++)o[k]=1;return o}
 let landOff=null;
@@ -811,7 +828,7 @@ function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(!j|
 let last=0,hasUp=0;
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
 addEventListener('resize',resize);
-function frame(ts){{const ss=seasonOf(monthIdx());if(ss!==curSeason&&window.petals)applySeason(ss)}
+function frame(ts){if(inMenu||S.spec){if(landG.children.length){clear(landG);lotView=''}}else{const sg=Math.floor(cam.tx/(PW*CW))+':'+nLots();if(sg!==lotView)updateLots()}{const ss=seasonOf(monthIdx());if(ss!==curSeason&&window.petals)applySeason(ss)}
  const dt=Math.min(.05,(ts-last)/1000||0);last=ts;const sdt=dt*S.speed;
  if(sdt>0){
   S.acc+=sdt;while(S.acc>=TL){S.acc-=TL;tick()}
