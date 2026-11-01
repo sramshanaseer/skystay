@@ -186,7 +186,7 @@ const isRoom=x=>x.t=='room'||x.t=='suite'||x.t=='penthouse',stars=()=>S.rs.reduc
 const cnt=t=>{let n=0;each(x=>{if(x.t==t)n++});return n},working=t=>{let n=0;each(x=>{if(x.t==t&&!x.br)n++});return n};
 function put(f,c,t){if(f+2>FL)FL=f+2;S.g[f][c]={t,f,c,occ:null,dirty:false,br:false,res:false,claim:null,busy:null,ds:0,bs:0,icons:null}}
 function fresh(){
- S={hn:{},money:10000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
+ S={sf:{},hn:{},money:10000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
  FL=10;
 }
 function tops(k){k=k||'elev';const t={};for(let c=S.c0;c<S.c1;c++){if(S.g[0][c]&&S.g[0][c].t==k){let f=0;while(S.g[f+1][c]&&S.g[f+1][c].t==k)f++;t[c]=f}}return t}
@@ -200,6 +200,8 @@ function route(p,tf,tx,tz){const pts=[];if(p.f!==tf){const s=pickShaft(p.f,tf,p.
   else if(tf>p.f){const a=p.f;pts.push({x:sx-dr(a)*1.1,z:LZ},{x:sx-dr(a)*1.1,z:-.1});for(let f=a;f<tf;f++)pts.push({x:sx+dr(f)*1.1,z:-.1,y:(f+1)*FH,stair:true});pts.push({x:sx+dr(tf-1)*1.1,z:LZ})}
   else{const a=p.f;pts.push({x:sx+dr(a-1)*1.1,z:LZ},{x:sx+dr(a-1)*1.1,z:-.1});for(let f=a-1;f>=tf;f--)pts.push({x:sx-dr(f)*1.1,z:-.1,y:f*FH,stair:true});pts.push({x:sx-dr(tf)*1.1,z:LZ})}}
  pts.push({x:tx,z:tz});p.f=tf;return pts}
+function calcEnts(){ents=[];for(let c=S.c0;c<S.c1;c++){const x=S.g[0][c],pv=S.g[0][c-1];if(x&&x.t=='hall'&&!(pv&&pv.t=='hall'))ents.push(c)}entC=ents.length?ents[0]:null}
+const effKey=k=>ents.includes(+k)?+k:(ents.length?ents[0]:0),hOf=x=>hotelCol(x.c)??0,sfOf=e=>S.sf[e]||(S.sf[e]={rec:0,maid:0,wait:0,eng:0});
 const hotelCol=c=>{let b=null,bd=1e9;for(const e of ents){const d=Math.abs(c-e);if(d<bd){bd=d;b=e}}return b},hotelName=e=>(S.hn&&S.hn[e])||(e===ents[0]?(S.name||'Skystay'):'Hotel '+(ents.indexOf(e)+1));
 const desks=()=>{const a=[];each(x=>{if(x.t=='reception')a.push(x)});return a.sort((p,q)=>p.c-q.c)},cafes=()=>{const a=[];each(x=>{if(x.t=='cafe')a.push(x)});return a.sort((p,q)=>p.c-q.c)};
 
@@ -334,7 +336,7 @@ function mergeStatic(root,skip){
  for(const o of dead){if(o.parent)o.parent.remove(o);if(o.geometry!==BG&&!o.geometry.userData.keep)o.geometry.dispose()}
 }
 function rebuild(){
- ents=[];signs=[];for(let c=S.c0;c<S.c1;c++){const x=S.g[0][c],pv=S.g[0][c-1];if(x&&x.t=='hall'&&!(pv&&pv.t=='hall'))ents.push(c)}entC=ents.length?ents[0]:null;
+ signs=[];calcEnts();
  clear(bld);glows.length=0;waters.length=0;
  const tp=tops(),topF={};
  const skipN=[];each(cl=>{const m=cellMesh(cl);m.traverse(o=>{if(o.userData.water)waters.push(o)});if(cl.door)skipN.push(cl.door);bld.add(m);cl.mesh=m;if(cl.f>(topF[cl.c]??-1))topF[cl.c]=cl.f});
@@ -453,23 +455,30 @@ function mv(p,dt){
 }
 function face(p,a,dt){let da=a-p.m.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));p.m.rotation.y+=da*Math.min(1,dt*8)}
 function goto(p,f,x,z){const pre=p.inRoom!=null?[{x:colX(p.inRoom)+DX,z:.55},{x:colX(p.inRoom)+DX,z:LZ}]:[];const r=route(p,f,x,z);if(r){p.path=pre.concat(r);p.inRoom=null}return !!r}
-let srC=null,srT=0;const staffRoom=()=>{const n=performance.now();if(n-srT>400){srT=n;srC=null;each(x=>{if(!srC&&x.t=='staffroom'&&!x.br)srC=x})}return srC};
-const homeXZ=p=>{const r=(p.role=='maid'||p.role=='eng')?staffRoom():null,i=(p.idx||0)+(p.role=='eng'?2:0);if(r)return{f:r.f,x:colX(r.c)+((i%4)*.6-.9),z:.55+(Math.floor(i/4)%3)*.45};return{f:0,x:colX(EC()+1)+(i%4)*.55-.5,z:LZ+.35+(Math.floor(i/4)%8)*.4}};
+let srC={},srT=0;const staffRoom=h=>{const n=performance.now();if(n-srT>400){srT=n;srC={};each(x=>{const k=hOf(x);if(!srC[k]&&x.t=='staffroom'&&!x.br)srC[k]=x})}return srC[h]||null};
+const homeXZ=p=>{const r=(p.role=='maid'||p.role=='eng')?staffRoom(p.h):null,i=(p.idx||0)+(p.role=='eng'?2:0);if(r)return{f:r.f,x:colX(r.c)+((i%4)*.6-.9),z:.55+(Math.floor(i/4)%3)*.45};return{f:0,x:colX((p.h??EC())+1)+(i%4)*.55-.5,z:LZ+.35+(Math.floor(i/4)%8)*.4}};
 
 // ---------- staff ----------
 function sync(){
- const nd=desks().length,nc=cafes().length;
- 
+ calcEnts();
+ if(!Object.keys(S.sf).length){const t=S.staff||{};if((t.rec||0)+(t.maid||0)+(t.wait||0)+(t.eng||0)>0)S.sf[ents.length?ents[0]:0]={rec:t.rec||0,maid:t.maid||0,wait:t.wait||0,eng:t.eng||0}}
+ const want={},hs=ents.length?ents.slice():[0];
+ for(const k in S.sf){const e=effKey(k);want[e]=want[e]||{rec:0,maid:0,wait:0,eng:0};for(const r in ST)want[e][r]+=S.sf[k][r]||0}
+ for(const e of hs)want[e]=want[e]||{rec:0,maid:0,wait:0,eng:0};
+ for(const p of S.pp)p.h=effKey(p.h==null?0:p.h);
+ const tot={rec:0,maid:0,wait:0,eng:0};
+ for(const e in want){const he=+e;
  for(const r in ST){
-  const arr=S.pp.filter(p=>p.role==r),want=S.staff[r];
-  while(arr.length<want){const h=lookOf(false);h.shirt=ST[r].sh;h.fem=r=='maid'?true:Math.random()<.5;h.bag=false;h.skirt=r=='maid'?'#2d4a7a':ST[r].sh;if(r=='rec')h.pants='#1f2a5a';const p=addP(r,h,colX(EC()),0,LZ+1.6);p.f=0;p.sp=2.6;S.pp.push(p);arr.push(p);p.path=[{x:colX(EC()+1)+arr.length*.4,z:LZ}]}
-  while(arr.length>want){const p=arr.pop();if(p.job){p.job.claim=null}rmP(p);S.pp.splice(S.pp.indexOf(p),1)}
+  const arr=S.pp.filter(p=>p.role==r&&p.h===he),w=want[e][r];tot[r]+=w;
+  while(arr.length<w){const h=lookOf(false);h.shirt=ST[r].sh;h.fem=r=='maid'?true:Math.random()<.5;h.bag=false;h.skirt=r=='maid'?'#2d4a7a':ST[r].sh;if(r=='rec')h.pants='#1f2a5a';const p=addP(r,h,colX(he),0,LZ+1.6);p.h=he;p.f=0;p.sp=2.6;S.pp.push(p);arr.push(p);p.path=[{x:colX(he+1)+arr.length*.4,z:LZ}]}
+  while(arr.length>w){const p=arr.pop();if(p.job){p.job.claim=null}rmP(p);S.pp.splice(S.pp.indexOf(p),1)}
   arr.forEach((p,i)=>p.idx=i);
- }
+ }}
+ S.staff=tot;
 }
 function station(p){
- if(p.role=='rec'){const d=desks()[p.idx];if(d)return{x:colX(d.c),f:0,z:-.55}}
- if(p.role=='wait'){const d=cafes()[p.idx];if(d)return{x:colX(d.c)-.2,f:d.f,z:-.45}}
+ if(p.role=='rec'){const d=desksOf(p.h)[p.idx];if(d)return{x:colX(d.c),f:0,z:-.55}}
+ if(p.role=='wait'){const d=cafes().filter(x=>(hotelCol(x.c)??0)===p.h)[p.idx];if(d)return{x:colX(d.c)-.2,f:d.f,z:-.45}}
  return null}
 function pickJob(p,test){let best=null,bd=1e9;each(x=>{if(test(x)&&!x.claim&&reach(x.f)){const d=Math.abs(x.f-p.f)*4+Math.abs(colX(x.c)-p.x)/CW;if(d<bd){bd=d;best=x}}});return best}
 function staffAI(p,dt){
@@ -487,15 +496,15 @@ function staffAI(p,dt){
   else if(p.st=='work'){face(p,0,dt);p.m.position.y=p.y+Math.abs(Math.sin(p.t*8))*.04;p.t-=dt;if(p.t<=0){if(p.role=='maid'){j.dirty=false}else{j.br=false}j.claim=null;p.job=null;p.st='';S.dayInc+=0;refreshFlags();const h=homeXZ(p);goto(p,h.f,h.x,h.z)}}
   return}
  if(done||!p.path.length){
-  const j=pickJob(p,p.role=='maid'?(x=>isRoom(x)&&x.dirty&&!x.occ):(x=>x.br&&!(isRoom(x)&&(x.occ||x.res))));
+  const j=pickJob(p,p.role=='maid'?(x=>isRoom(x)&&x.dirty&&!x.occ&&hOf(x)===p.h):(x=>x.br&&!(isRoom(x)&&(x.occ||x.res))&&hOf(x)===p.h));
   if(j){j.claim=p;p.job=j;p.st='go';const rm=isRoom(j);if(!goto(p,j.f,rm?colX(j.c)+DX:colX(j.c)+(p.role=='eng'?.5:-.4),rm?LZ:.9)){j.claim=null;p.job=null;p.st=''}else if(rm){p.dr=j;p.path.push({x:colX(j.c)+DX,z:.55},{x:colX(j.c)+(p.role=='eng'?.4:-.3),z:-.3});p.inRoom=j.c}}
   else{const h=homeXZ(p);if(Math.hypot(h.x-p.x,h.z-p.z)>.2||p.f!=h.f)goto(p,h.f,h.x,h.z);else face(p,0,dt)}
  }
 }
 
 // ---------- guests ----------
-const desksOf=e=>desks().filter(d=>hotelCol(d.c)===e),qBase=e=>{const d=desksOf(e)[0];return(d?colX(d.c)-1.9:colX(e+2))};
-function freeDesk(e){const ds=desksOf(e);for(let i=0;i<ds.length;i++){const d=ds[i];if(d.br||d.busy)continue;const gi=desks().indexOf(d),r=S.pp.find(p=>p.role=='rec'&&p.idx==gi);if(r&&r.stat)return d}return null}
+const desksOf=e=>desks().filter(d=>(hotelCol(d.c)??0)===e),qBase=e=>{const d=desksOf(e)[0];return(d?colX(d.c)-1.9:colX(e+2))};
+function freeDesk(e){const ds=desksOf(e);for(let i=0;i<ds.length;i++){const d=ds[i];if(d.br||d.busy)continue;const r=S.pp.find(p=>p.role=='rec'&&p.h===e&&p.idx==i);if(r&&r.stat)return d}return null}
 function pickRoom(vip,e){
  const L=[];each(x=>{if(isRoom(x)&&!x.occ&&!x.dirty&&!x.br&&!x.res&&reach(x.f)&&hotelCol(x.c)===e)L.push(x)});if(!L.length)return null;
  const pr=t=>L.filter(x=>x.t==t);
@@ -751,12 +760,16 @@ function envUpdate(force){
  for(const m of glows)m.emissiveIntensity=nightF*.95*(m.userData.mul||1)+(.08*(m.userData.mul||1));
 }
 // ---------- UI modals ----------
+let staffH=null;
 function showStaff(){
- const ds=desks().length,cf=cafes().length,caps={rec:99,maid:99,wait:99,eng:99};
- $('cst').innerHTML='<h2>👥 Staff &amp; pricing</h2>'+Object.keys(ST).map(r=>`<div class="row"><div style="font-size:26px">${ST[r].e}</div><div class="g"><b>${ST[r].n}</b><br><small>$${ST[r].s}/month · ${r=='rec'?'desks: '+ds+' — staff beyond that wait in the lobby':r=='wait'?'cafés: '+cf+' — extras wait in the lobby':'hire as many as you like'}</small></div><button data-r="${r}" data-d="-1">−</button><b>${S.staff[r]}</b><button data-r="${r}" data-d="1" ${S.staff[r]>=caps[r]?'disabled':''}>＋</button></div>`).join('')
+ const hs=ents.length?ents:[0];if(staffH==null||!hs.includes(staffH))staffH=hs[0];const e=staffH,sf=sfOf(e),multi=ents.length>1;
+ const ds=desksOf(e).length,cf=cafes().filter(x=>(hotelCol(x.c)??0)===e).length,caps={rec:99,maid:99,wait:99,eng:99};
+ const nm=x=>ents.length?hotelName(x):(S.name||'Skystay');
+ $('cst').innerHTML='<h2>👥 Staff &amp; pricing</h2>'+(multi?'<div class="row" style="flex-wrap:wrap;gap:6px">'+hs.map(x=>`<button data-h="${x}" style="${x===e?'background:var(--gd);color:#222':''}">${nm(x).replace(/[<>&]/g,'')}</button>`).join('')+'</div><div class="row"><div class="g"><small>Hiring for <b>'+nm(e).replace(/[<>&]/g,'')+'</b> — each hotel has its own staff.</small></div></div>':'')+Object.keys(ST).map(r=>`<div class="row"><div style="font-size:26px">${ST[r].e}</div><div class="g"><b>${ST[r].n}</b><br><small>$${ST[r].s}/month · ${r=='rec'?'desks: '+ds+' — staff beyond that wait in the lobby':r=='wait'?'cafés: '+cf+' — extras wait in the lobby':'hire as many as you like'}</small></div><button data-r="${r}" data-d="-1">−</button><b>${sf[r]}</b><button data-r="${r}" data-d="1" ${sf[r]>=caps[r]?'disabled':''}>＋</button></div>`).join('')
  +`<div class="row"><div class="g"><b>Room rate</b> <b style="color:var(--gd)">${Math.round(S.rate*100)}%</b><br><small>High prices earn more but guests rate you lower; low prices draw crowds.</small></div><input id="rt" type="range" min="60" max="160" value="${Math.round(S.rate*100)}"></div>`
  +`<div class="row"><button id="rs">🗑️ Reset hotel</button><div class="g"></div><button id="cl">Close</button></div>`;
- $('cst').querySelectorAll('button[data-r]').forEach(b=>b.onclick=()=>{const r=b.dataset.r,d=+b.dataset.d;S.staff[r]=clamp(S.staff[r]+d,0,caps[r]);sync();showStaff();goalsCheck();hud()});
+ $('cst').querySelectorAll('button[data-h]').forEach(b=>b.onclick=()=>{staffH=+b.dataset.h;showStaff()});
+ $('cst').querySelectorAll('button[data-r]').forEach(b=>b.onclick=()=>{const r=b.dataset.r,d=+b.dataset.d;sf[r]=clamp(sf[r]+d,0,caps[r]);sync();showStaff();goalsCheck();hud()});
  $('rt').oninput=e=>{S.rate=e.target.value/100;showStaff.keep=1};$('rt').onchange=()=>showStaff();
  let rs=0;$('rs').onclick=()=>{if(!rs){rs=1;$('rs').textContent='Tap again to confirm';return}try{localStorage.removeItem(KEY)}catch(e){}location.reload()};
  $('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
@@ -817,9 +830,9 @@ $('bzi').onclick=()=>cam.r=clamp(cam.r*.85,10,400);$('bzo').onclick=()=>cam.r=cl
 addEventListener('keydown',e=>{if(e.key=='Escape'){S.tool=null;renderTabs();renderItems();say('Browsing.')}});
 
 // ---------- save / load ----------
-function save(){if(inMenu||S.spec)return;try{localStorage.setItem(KEY,JSON.stringify({name:S.name,hn:S.hn,mode:S.mode,money:S.money,day:S.day,hour:S.hour,m0:S.m0,c0:S.c0,c1:S.c1,lots:Object.keys(S.lots).map(Number),rate:S.rate,fast:S.fast,sprink:S.sprink,rs:S.rs,staff:S.staff,goals:S.goals,reviews:S.reviews.slice(0,25),cells:(()=>{const a=[];each(x=>a.push([x.f,x.c,x.t,x.occ,x.dirty,x.br,x.up||null]));return a})()}))}catch(e){}}
+function save(){if(inMenu||S.spec)return;try{localStorage.setItem(KEY,JSON.stringify({name:S.name,hn:S.hn,mode:S.mode,money:S.money,day:S.day,hour:S.hour,m0:S.m0,c0:S.c0,c1:S.c1,lots:Object.keys(S.lots).map(Number),rate:S.rate,fast:S.fast,sprink:S.sprink,rs:S.rs,staff:S.staff,sf:S.sf,goals:S.goals,reviews:S.reviews.slice(0,25),cells:(()=>{const a=[];each(x=>a.push([x.f,x.c,x.t,x.occ,x.dirty,x.br,x.up||null]));return a})()}))}catch(e){}}
 function load(){try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(!j||!j.cells)return false;
- S.name=j.name||'Skystay';S.hn=j.hn&&typeof j.hn=='object'?j.hn:{};S.mode=j.mode=='multi'?'multi':'single';S.money=j.money;S.day=j.day;S.hour=j.hour;S.m0=j.m0??new Date().getMonth();S.lots=Array.isArray(j.lots)&&j.lots.length?Object.fromEntries(j.lots.map(k=>[k,1])):lotsFromRange(j.c0??0,j.c1??j.NC??8);setExt();S.rate=j.rate||1;S.fast=!!j.fast;S.sprink=!!j.sprink;S.rs=j.rs&&j.rs.length?j.rs:S.rs;S.staff=j.staff;S.goals=j.goals||{};S.reviews=j.reviews||[];
+ S.name=j.name||'Skystay';S.hn=j.hn&&typeof j.hn=='object'?j.hn:{};S.mode=j.mode=='multi'?'multi':'single';S.money=j.money;S.day=j.day;S.hour=j.hour;S.m0=j.m0??new Date().getMonth();S.lots=Array.isArray(j.lots)&&j.lots.length?Object.fromEntries(j.lots.map(k=>[k,1])):lotsFromRange(j.c0??0,j.c1??j.NC??8);setExt();S.rate=j.rate||1;S.fast=!!j.fast;S.sprink=!!j.sprink;S.rs=j.rs&&j.rs.length?j.rs:S.rs;S.staff=j.staff;S.sf=j.sf&&typeof j.sf=='object'?j.sf:{};S.goals=j.goals||{};S.reviews=j.reviews||[];
  S.g=mkg();FL=10;j.cells.forEach(a=>{put(a[0],a[1],a[2]);const x=S.g[a[0]][a[1]];x.occ=a[3];x.dirty=a[4];x.br=a[5];x.up=a[6]||null;x.ds=S.day;x.bs=S.day});return true}catch(e){return false}}
 
 // ---------- main loop ----------
@@ -903,7 +916,7 @@ function applyLayout(d,first){
   const up=Array.isArray(a[6])&&a[6].length?Object.fromEntries(a[6].filter(u=>T[u]&&T[u].upg).map(u=>[u,1])):null;if(JSON.stringify(up)!==JSON.stringify(x.up||null)){x.up=up;changed=true}
   x.br=!!a[5];x.dirty=!!a[4];if(x.br)x.bs=S.day;if(x.dirty)x.ds=S.day;
   if(isRoom(x)){const o=a[3];if(o&&!x.occ){x.occ={vip:o==2,look:lookOf(o==2),wait:2,nights:1+Math.floor(Math.random()*2),stay:1+Math.floor(Math.random()*2),inD:S.day-1,price:T[x.t].p}}else if(!o&&x.occ&&!x.evac)x.occ=null}}
- S.staff=Object.assign({rec:0,maid:0,wait:0,eng:0},d.staff||{});S.fast=!!d.fast;S.sprink=!!d.sprink;S.rs=[clamp(+d.stars||2,1,5)];
+ S.staff=Object.assign({rec:0,maid:0,wait:0,eng:0},d.staff||{});S.sf={};S.fast=!!d.fast;S.sprink=!!d.sprink;S.rs=[clamp(+d.stars||2,1,5)];
  if(changed||first){sync();rebuild()}else refreshFlags()}
 function specHud(){const d=S.spec.d;$('hm').textContent='$'+Math.round(d.money||0).toLocaleString();$('hd').textContent=d.day;$('logo').textContent=String(d.name||'Hotel').toUpperCase()+' 👁'}
 async function updateBanner(){if(!S.spec||!S.spec.d)return;const d=S.spec.d,id=S.spec.uid;let nm='a player';try{const ps=LB.user?await LB.user.profiles([id]):{};nm=(ps[id]&&ps[id].name)||nm}catch(e){}$('spect').textContent='👁 Visiting '+String(d.name||'a hotel')+' · '+nm+' · ★'+(+d.stars||0).toFixed(1)+' · Day '+d.day}
