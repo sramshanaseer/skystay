@@ -6,7 +6,7 @@ A single-file 3D hotel tycoon game (three.js). Build rooms, hire staff, add stai
 
 `index.html` is the whole game (three.js is bundled inside, no build step, works offline).
 
-- **GitHub Pages:** push to `main`, then in the repo go to *Settings → Pages → Source: GitHub Actions*. The included workflow publishes it.
+- **GitHub Pages:** in the repo go to *Settings → Pages → Source: Deploy from a branch → main / (root)*.
 - **Netlify / Vercel / Cloudflare Pages:** import the repo, no build command, output directory `.`
 - Installable on phones via "Add to Home Screen" (manifest + service worker included).
 
