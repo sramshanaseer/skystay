@@ -717,7 +717,7 @@ cv.addEventListener('pointerup',e=>{const p=ptrs.get(e.pointerId);ptrs.delete(e.
 cv.addEventListener('pointercancel',e=>ptrs.delete(e.pointerId));
 cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=clamp(cam.r*(1+e.deltaY*.001),10,400)},{passive:false});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-function click(f,c){if(!S.spec&&f>=0&&f<3&&!S.lots[lotOf(c)]){askBuy(lotOf(c));return}if(S.tool){place(f,c)}else inspect(f,c,true)}
+function click(f,c){if(!S.spec&&f>=0&&f<3&&!S.lots[lotOf(c)]){askBuy(lotOf(c));return}hideBuy();if(S.tool){place(f,c)}else inspect(f,c,true)}
 function describe(x){let s=T[x.t].n;if(isRoom(x)){s+=x.occ?' — '+x.occ.look.name+(x.occ.vip?' (VIP)':'')+', '+x.occ.stay+' night'+(x.occ.stay>1?'s':'')+' left':x.dirty?' — dirty':x.br?' — broken':' — vacant'}else if(x.br)s+=' — broken';if(x.t=='reception'){s+=' — '+(S.pp.some(p=>p.role=='rec'&&p.stat&&desks()[p.idx]===x)?'staffed':'no receptionist')}if(x.t=='cafe')s+=S.pp.some(p=>p.role=='wait'&&cafes()[p.idx]===x)?' — waiter on duty':' — needs a waiter';return s}
 function inspect(f,c,set){const x=S.g[f]&&S.g[f][c];const s=x?describe(x):'Empty cell (floor '+(f+1)+')';$('info').textContent=s;if(set)say(s)}
 function hover(cx,cy){if(inMenu)return;
@@ -761,28 +761,33 @@ function showRev(){
 ['mst','mrv','mlb'].forEach(id=>$(id).addEventListener('pointerdown',e=>{if(e.target.id==id)$(id).classList.remove('show')}));
 $('bst').onclick=showStaff;$('brv').onclick=showRev;
 [0,1,2,3].forEach(i=>$('b'+i).onclick=()=>{S.speed=i;[0,1,2,3].forEach(j=>$('b'+j).classList.toggle('on',j==i))});
-let lotView='';
+let lotView='',coinTex=null,buyEl=null;
+function coinTexture(){if(coinTex)return coinTex;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ x.fillStyle='#7a4a24';x.beginPath();x.arc(64,64,58,0,7);x.fill();x.fillStyle='#e8a33d';x.beginPath();x.arc(64,64,50,0,7);x.fill();x.strokeStyle='#fff3c4';x.lineWidth=5;x.beginPath();x.arc(64,64,40,0,7);x.stroke();
+ x.fillStyle='#fff8dc';x.font='bold 70px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('$',64,70);return coinTex=new THREE.CanvasTexture(c)}
 function updateLots(){clear(landG);const mid=Math.floor(cam.tx/(PW*CW));lotView=mid+':'+nLots();
  for(let k=mid-6;k<=mid+6;k++){if(S.lots[k])continue;const lx=k*PW*CW,lw=PW*CW,cx=lx+lw/2;
-  b(landG,lw-.2,.05,DD+3.6,'#8a7a58',cx,-.31,.5);
-  for(let i=0;i<=PW;i++)for(const z of[-DD/2-.6,DD/2+2.2])b(landG,.12,.9,.12,'#7a5a36',lx+i*CW,-.3,z);
-  for(const z of[-DD/2-.6,DD/2+2.2]){b(landG,lw,.08,.06,'#8a6a40',cx,.15,z);b(landG,lw,.08,.06,'#8a6a40',cx,.55,z)}
-  for(const x of[lx,lx+lw]){b(landG,.06,.08,DD+2.8,'#8a6a40',x,.15,.8);b(landG,.06,.08,DD+2.8,'#8a6a40',x,.55,.8)}
   let q=Math.abs(k*7919+13);const rr=()=>{q=(q*9301+49297)%233280;return q/233280};
-  for(let i=0;i<6;i++){const x=lx+.8+rr()*(lw-1.6),z=-1.5+rr()*5;sph(landG,.25+rr()*.3,'#4f7a3a',x,.1,z)}
-  for(let i=0;i<3;i++){const x=lx+.8+rr()*(lw-1.6),z=-1.5+rr()*5;b(landG,.5,.3,.4,'#8d8d94',x,-.3,z)}
-  const sg=label('🔒 LOT '+k+'   $'+expCost().toLocaleString(),4.4,.9,'#3a2a14','#ffe9b0',40);sg.position.set(cx,2.2,DD/2+1.0);landG.add(sg);b(landG,.12,2.0,.12,'#777',cx-2,-.3,DD/2+.95);b(landG,.12,2.0,.12,'#777',cx+2,-.3,DD/2+.95)}
+  // wild, overgrown land (trees use the seasonal crown colours)
+  const nt=7+Math.floor(rr()*3);
+  for(let i=0;i<nt;i++){const x=lx+.7+rr()*(lw-1.4),z=-DD/2-.2+rr()*(DD+2.6),s=.8+rr()*.7;cyl(landG,.18*s,1.3*s,'#6b4a2a',x,-.3,z,6);sph(landG,.95*s,crownMats[i%3],x,1.5*s-.3,z);if(rr()<.5)sph(landG,.65*s,crownMats[(i+1)%3],x+.35*s,1.0*s,z+.2)}
+  for(let i=0;i<8;i++){const x=lx+.5+rr()*(lw-1),z=-DD/2+rr()*(DD+3);sph(landG,.22+rr()*.28,'#3f7a3a',x,.05,z)}
+  for(let i=0;i<4;i++){const x=lx+.8+rr()*(lw-1.6),z=-1.5+rr()*5;b(landG,.5,.3,.4,'#8d8d94',x,-.3,z)}
+  if(rr()<.4){const px=lx+3+rr()*(lw-6),pz=1.5+rr()*2;cyl(landG,1.3,.04,new THREE.MeshLambertMaterial({color:'#4aa8d8'}),px,-.3,pz,18)}
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:coinTexture(),depthTest:false}));sp.scale.set(1.5,1.5,1);sp.position.set(cx,2.6,DD/2+.9);sp.renderOrder=5;sp.userData.lot=k;landG.add(sp);b(landG,.1,2.3,.1,'#7a4a24',cx,-.3,DD/2+.9)}
  mergeStatic(landG,[])}
-function askBuy(k){const box=$('cst');box.textContent='';const h=document.createElement('h2');h.textContent='🔒 Locked land — Lot '+k;box.appendChild(h);
- const c=expCost(),p=document.createElement('p');p.style.cssText='margin:0 0 12px;color:var(--mu)';p.textContent='This empty lot is 6 building cells wide. Buy it to build on it. Price: $'+c.toLocaleString()+' (the price rises with every lot you own).';box.appendChild(p);
- const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;justify-content:flex-end';
- const ok=document.createElement('button');ok.textContent=S.money>=c?'Buy for $'+c.toLocaleString():'Not enough cash';ok.disabled=S.money<c;ok.style.cssText='padding:8px 14px;border:2px solid #58c27d';ok.onclick=()=>{$('mst').classList.remove('show');buyLot(k)};
- const no=document.createElement('button');no.textContent='Cancel';no.style.cssText='padding:8px 14px';no.onclick=()=>$('mst').classList.remove('show');
- row.append(no,ok);box.appendChild(row);$('mst').classList.add('show')}
+function hideBuy(){if(buyEl)buyEl.style.display='none'}
+function askBuy(k){
+ if(!buyEl){buyEl=document.createElement('div');buyEl.style.cssText='position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:30;background:linear-gradient(#3b2a18,#24190e);border:3px solid #e8a33d;border-radius:18px;padding:10px 16px;display:flex;align-items:center;gap:14px;color:#ffe9b0;font:800 16px system-ui,sans-serif;box-shadow:0 8px 30px #000a;text-shadow:0 2px 0 #000a';document.body.appendChild(buyEl)}
+ const c=expCost(),ok=S.money>=c;buyEl.textContent='';buyEl.style.display='flex';
+ const t=document.createElement('div');t.style.cssText='line-height:1.15';const a=document.createElement('small');a.style.cssText='display:block;opacity:.75;font-size:11px;letter-spacing:.08em';a.textContent='BUY LOT '+k+' FOR';const m=document.createElement('div');m.textContent='🪙 $'+c.toLocaleString();t.append(a,m);buyEl.appendChild(t);
+ const mk=(txt,bg,fn,dis)=>{const bt=document.createElement('button');bt.textContent=txt;bt.disabled=!!dis;bt.style.cssText='width:46px;height:46px;border-radius:12px;border:3px solid #fff;background:'+bg+';color:#fff;font:900 22px system-ui;padding:0;cursor:pointer;box-shadow:0 3px 0 #0007';bt.onclick=fn;return bt};
+ buyEl.appendChild(mk('✕','#d6403a',hideBuy));buyEl.appendChild(mk('✓','#3aa84f',()=>{hideBuy();buyLot(k)},!ok));
+ if(!ok){const n=document.createElement('small');n.style.cssText='color:#ff9a8a;max-width:90px;line-height:1.1';n.textContent='Not enough cash';buyEl.insertBefore(n,buyEl.children[1])}}
 function setExt(){const k=Object.keys(S.lots).map(Number);if(!k.length){S.lots={0:1,1:1};return setExt()}S.c0=Math.min(...k)*PW;S.c1=(Math.max(...k)+1)*PW}
 function lotsFromRange(a,b){const o={};for(let k=Math.floor(a/PW);k<Math.ceil(b/PW);k++)o[k]=1;return o}
 let landOff=null;
-function buyLot(k){if(S.spec||S.lots[k])return;const c=expCost();if(S.money<c){toast('This lot costs $'+c.toLocaleString(),'bad');return}S.money-=c;S.lots[k]=1;setExt();rebuild();updateGhosts();hud();save();toast('🏞️ Lot '+k+' bought! You now own '+nLots()+' lots.')}
+function buyLot(k){if(S.spec||S.lots[k])return;hideBuy();const c=expCost();if(S.money<c){toast('This lot costs $'+c.toLocaleString(),'bad');return}S.money-=c;S.lots[k]=1;setExt();rebuild();updateGhosts();hud();save();toast('🏞️ Lot '+k+' bought! You now own '+nLots()+' lots.')}
 function showLand(){
  const mid=Math.floor(cam.tx/(PW*CW));if(landOff==null)landOff=mid;
  const box=$('cst');box.textContent='';const h=document.createElement('h2');h.textContent='🏞️ Buy land';box.appendChild(h);
