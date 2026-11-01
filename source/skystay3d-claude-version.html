@@ -511,7 +511,7 @@ function leaveG(p,why){
  const i=S.q.indexOf(p);if(i>=0)S.q.splice(i,1);if(p.desk){p.desk.busy=null;p.desk=null}if(p.room){p.room.res=false;p.room=null}
  if(why=='queue')addReview(p.look,1+(Math.random()<.4?1:0),'I waited over '+Math.round(p.wt)+' seconds at reception and gave up. Hire more receptionists or build more desks!',true);
  else if(why=='norec')addReview(p.look,1,'There was no reception desk to check in at.',true);
- else if(why=='full'){S.lost++;toast('A guest left — no clean rooms free!','bad')}
+ else if(why=='full'){S.lost++;toast('A guest left — room not available!','bad')}
  p.st='exit';p.m.rotation.y=-1.2;p.path=[{x:colX(EC())+.2,z:DD/2+4.4},{x:colX(EC())-18,z:DD/2+4.4}];p.f=0}
 function guestAI(p,dt){
  const done=mv(p,dt);
