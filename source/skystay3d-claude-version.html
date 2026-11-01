@@ -89,7 +89,7 @@ body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body
  <span class="chip">🛏️ <b id="hr">0/0</b></span>
  <div class="sp">
   <button id="b0">⏸</button><button id="b1" class="on">1×</button><button id="b2">2×</button><button id="b3">3×</button>
-  <button id="bst">👥 Staff</button><button id="brv">⭐ Reviews</button><button id="bexl">◀ Expand</button><button id="bex">Expand ▶</button><button class="sndb" data-k="s" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button class="sndb" data-k="m" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button id="blb">🏆</button><button id="bmn">☰ Menu</button><button id="bhp">❓</button><button id="bzi">＋</button><button id="bzo">－</button>
+  <button id="bst">👥 Staff</button><button id="brv">⭐ Reviews</button><button id="bexl">◀ Buy land</button><button id="bex">Buy land ▶</button><button class="sndb" data-k="s" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button class="sndb" data-k="m" style="width:auto;height:auto;padding:6px 10px;font-size:15px"></button><button id="blb">🏆</button><button id="bmn">☰ Menu</button><button id="bhp">❓</button><button id="bzi">＋</button><button id="bzo">－</button>
  </div>
 </div>
 <div class="ui chip" id="goal"></div><div class="ui chip" id="alarm"></div><div class="ui chip" id="spec"><span id="spect"></span><button id="specb">← Back to my hotel</button></div>
@@ -112,7 +112,7 @@ body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body
 "use strict";
 const $=id=>document.getElementById(id);
 const rnd=a=>a[Math.floor(Math.random()*a.length)],RR=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10;function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,expCost=()=>1500+(S.c1-S.c0-8)*500;
+const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10;function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,PW=6,expCost=()=>Math.round(3000+(S.c1-S.c0-8)/PW*2000);
 const T={
  room:{n:'Room',e:'🛏️',c:400,u:4,l:2,cat:'Rooms',st:0,p:90,wall:'#a9b87c',d:'Standard room, $90 a night. Any floor — ground floor rooms need no elevator.'},
  suite:{n:'Suite',e:'🛋️',c:1100,u:10,l:2,cat:'Rooms',st:1,p:220,wall:'#9b7bb8',d:'Roomy suite. $220 a night. VIPs love them.'},
@@ -348,6 +348,9 @@ function rebuild(){
  {const g=new THREE.Group();g.position.set(colX(0),0,0);b(g,CW*.95,.18,2.2,'#7a1f2b',0,2.65,DD/2+.9);b(g,.1,2.7,.1,'#c9a24a',-CW*.45,0,DD/2+1.9);b(g,.1,2.7,.1,'#c9a24a',CW*.45,0,DD/2+1.9);b(g,2.2,.03,4.2,'#8a1f2b',0,0,DD/2+2.0);const s=label('GRAND ENTRANCE',2.4,.34,'#2a1418','#ffd88a',28);s.position.set(0,2.95,DD/2+1.95);g.add(s);for(const sx of[-1,1]){cyl(g,.05,1.7,'#222',sx*1.45,0,DD/2+3.2,6);sph(g,.15,G('#ffe9b0','#ffd070',1),sx*1.45,1.8,DD/2+3.2)}bld.add(g)}
  // extended scenery along the whole plot
  {let q=0;const sr=n=>{q=(q*9301+49297+n*131)%233280;return q/233280};for(let x=Math.floor((X0()-30)/8)*8;x<=X1()+30;x+=8){if(x>=-24&&x<=48)continue;const g=new THREE.Group();g.position.set(x,-.3,DD/2+3.0);cyl(g,.07,3.0,'#222',0,0,0,6);sph(g,.22,G('#ffe9b0','#ffd070',1),0,3.1,0);bld.add(g);const h=new THREE.Group();h.position.set(x+3,-.3,DD/2+1);sph(h,.5,'#3f8a4a',0,.3,0);bld.add(h);if(sr(x)<.5){const t=new THREE.Group();t.position.set(x+4,-.3,-8-sr(x+1)*50);cyl(t,.35,2.4,'#6b4a2a',0,0,0,6);sph(t,1.7,crownMats[0],0,3.4,0);sph(t,1.2,crownMats[1],.9,3.0,.4);bld.add(t)}}}
+ // land boundary markers and for-sale signs
+ {const p0=X0(),p1=X1();for(const x of[p0,p1])for(const z of[-DD/2-.6,DD/2+2.2]){b(bld,.14,1.1,.14,'#c9a24a',x,-.3,z)}
+  for(const sd of[-1,1]){const x=sd<0?p0-5:p1+5,sg=label('FOR SALE  $'+expCost().toLocaleString(),4.2,.9,'#7a1f2b','#ffe9b0',40);sg.position.set(x,2.3,DD/2+1.2);bld.add(sg);b(bld,.14,2.0,.14,'#888',x-1.8,-.3,DD/2+1.1);b(bld,.14,2.0,.14,'#888',x+1.8,-.3,DD/2+1.1)}}
  // rooftop sign
  {const s=label((S.name||'Skystay').toUpperCase(),12,2.4,'#13141d','#e6c46a',200);let hh=0;each(x=>{hh=Math.max(hh,x.f)});s.position.set((S.c0+S.c1)*CW/2,(hh+1)*FH+2.9,DD/2+.2);bld.add(s);
   const m1=b(bld,.2,2.8,.2,'#888',(S.c0+S.c1)*CW/2-4.5,(hh+1)*FH+.35,DD/2+.1),m2=b(bld,.2,2.8,.2,'#888',(S.c0+S.c1)*CW/2+4.5,(hh+1)*FH+.35,DD/2+.1)}
@@ -656,7 +659,7 @@ function hud(){
  const s=stars();$('hs').innerHTML='<b>'+s.toFixed(1)+'</b> '+'★'.repeat(Math.round(s))+'<span style="opacity:.3">'+'★'.repeat(5-Math.round(s))+'</span>';
  let o=0,r=0;each(x=>{if(isRoom(x)){r++;if(x.occ)o++}});$('hr').textContent=o+'/'+r;
  const gi=GOALS.findIndex((g,i)=>!S.goals['g'+i]);$('goal').innerHTML=gi<0?'🏆 All goals done!':'🎯 <b>Goal:</b> '+GOALS[gi][0]+' <span style="color:var(--gd)">+$'+GOALS[gi][2]+'</span>';
- $('bex').textContent='Expand right ▶ ($'+expCost()+')';$('bexl').textContent='◀ Expand left ($'+expCost()+')';
+ $('bex').textContent='Buy land ▶ ($'+expCost().toLocaleString()+')';$('bexl').textContent='◀ Buy land ($'+expCost().toLocaleString()+')';
  renderItems(true);if(S.spec&&S.spec.d)specHud();
 }
 // ---------- build / interaction ----------
@@ -757,9 +760,9 @@ function showRev(){
 ['mst','mrv','mlb'].forEach(id=>$(id).addEventListener('pointerdown',e=>{if(e.target.id==id)$(id).classList.remove('show')}));
 $('bst').onclick=showStaff;$('brv').onclick=showRev;
 [0,1,2,3].forEach(i=>$('b'+i).onclick=()=>{S.speed=i;[0,1,2,3].forEach(j=>$('b'+j).classList.toggle('on',j==i))});
-const doExpand=side=>{if(S.spec)return;const c=expCost();if(S.money<c){toast('Expansion costs $'+c,'bad');return}S.money-=c;if(side<0){S.c0--;cam.tx=Math.min(cam.tx,(S.c0+S.c1)*CW/2)}else{S.c1++;cam.tx=Math.max(cam.tx,(S.c0+S.c1)*CW/2)}rebuild();updateGhosts();hud();save();toast('Land expanded to the '+(side<0?'left':'right')+'! (Width '+(S.c1-S.c0)+')')};
+const doExpand=side=>{if(S.spec)return;const c=expCost();if(S.money<c){toast('This land plot costs $'+c.toLocaleString(),'bad');return}S.money-=c;if(side<0){S.c0-=PW;cam.tx=Math.min(cam.tx,(S.c0+S.c1)*CW/2)}else{S.c1+=PW;cam.tx=Math.max(cam.tx,(S.c0+S.c1)*CW/2)}rebuild();updateGhosts();hud();save();toast('🏞️ Land plot bought on the '+(side<0?'left':'right')+'! You now own '+(S.c1-S.c0)+' lots of building space.')};
 $('bex').onclick=()=>doExpand(1);$('bexl').onclick=()=>doExpand(-1);
-function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
+function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Land</b>: use the Buy land buttons to purchase a whole plot of 6 lots on the left or right. Each plot costs more than the last, and you can keep buying as long as you have the money — build separate towers on each.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
 $('bhp').onclick=showHelp;
 $('bzi').onclick=()=>cam.r=clamp(cam.r*.85,10,400);$('bzo').onclick=()=>cam.r=clamp(cam.r*1.18,10,400);
 addEventListener('keydown',e=>{if(e.key=='Escape'){S.tool=null;renderTabs();renderItems();say('Browsing.')}});
