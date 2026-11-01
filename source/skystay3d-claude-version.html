@@ -112,11 +112,12 @@ body.spec #bot,body.spec #goal,body.spec #bst,body.spec #bex,body.spec #brv,body
 "use strict";
 const $=id=>document.getElementById(id);
 const rnd=a=>a[Math.floor(Math.random()*a.length)],RR=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10;function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,PW=6,expCost=()=>Math.round(3000+(S.c1-S.c0-8)/PW*2000);
+const CW=3.2,FH=3.4,DD=4.4,LZ=1.55,DX=.55,TL=.9,KEY='skystay3d-1';let FL=10,entC=null;function mkg(){return new Proxy({},{get(t,k){if(typeof k=='string'&&/^-?\d+$/.test(k))return t[k]||(t[k]={});return t[k]}})}const X0=()=>S.c0*CW,X1=()=>S.c1*CW,EC=()=>entC==null?S.c0:entC,PW=6,expCost=()=>Math.round(3000+(S.c1-S.c0-8)/PW*2000);
 const T={
  room:{n:'Room',e:'🛏️',c:400,u:4,l:2,cat:'Rooms',st:0,p:90,wall:'#a9b87c',d:'Standard room, $90 a night. Any floor — ground floor rooms need no elevator.'},
  suite:{n:'Suite',e:'🛋️',c:1100,u:10,l:2,cat:'Rooms',st:1,p:220,wall:'#9b7bb8',d:'Roomy suite. $220 a night. VIPs love them.'},
  penthouse:{n:'Penthouse',e:'🏙️',c:3000,u:25,l:1,cat:'Rooms',st:2.5,p:520,wall:'#2e3558',d:'Top luxury. $520 a night. Floor 3+.'},
+ hall:{n:'Main entrance',e:'🚪',c:1500,u:10,l:0,cat:'Service',st:0,wall:'#cdbb91',d:'Your front door and lobby. Guests arrive here, so build it first on the ground floor. The leftmost one is your main entrance.'},
  reception:{n:'Reception',e:'🛎️',c:600,u:10,l:0,cat:'Service',st:0,wall:'#cdbb91',d:'A desk for one receptionist. Ground floor.'},
  laundry:{n:'Laundry',e:'🧺',c:800,u:12,l:2,cat:'Service',st:0,wall:'#9ec6d8',d:'Faster cleaning and fresh sheets.'},
  valet:{n:'Valet parking',e:'🚗',c:1400,u:16,l:0,cat:'Service',st:0,wall:'#3a3f4b',d:'Valet stand. More guests arrive by car, they tip, and reviews improve. Ground floor.'},
@@ -187,7 +188,6 @@ function put(f,c,t){if(f+2>FL)FL=f+2;S.g[f][c]={t,f,c,occ:null,dirty:false,br:fa
 function fresh(){
  S={money:5000,day:1,hour:8,acc:0,speed:1,c0:0,c1:8,m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
  FL=10;
- for(let c=0;c<3;c++)put(0,c,'hall');
 }
 function tops(k){k=k||'elev';const t={};for(let c=S.c0;c<S.c1;c++){if(S.g[0][c]&&S.g[0][c].t==k){let f=0;while(S.g[f+1][c]&&S.g[f+1][c].t==k)f++;t[c]=f}}return t}
 function reach(f){if(f==0)return true;for(const k of['elev','stairs']){const t=tops(k);for(const c in t)if(t[c]>=f)return true}return false}
@@ -298,10 +298,9 @@ function cellMesh(cl){
   b(g,CW,FH,.2,'#2a2d37',0,0,-DD/2+.1);b(g,.15,FH,.3,'#7a7f8e',-1.45,0,-1.3);b(g,.15,FH,.3,'#7a7f8e',1.45,0,-1.3);
   b(g,.6,.2,.05,G('#ff5a4a','#ff3a2a',1),0,3.0,-1.0);
  }else if(t=='hall'){
-  b(g,CW-.2,.03,2.0,'#8a1f2b',0,0,.5);
-  if(cl.c==1){b(g,1.6,.4,.8,'#4a2a22',0,0,-1.5);b(g,1.7,.6,.15,'#4a2a22',0,.4,-1.85);cyl(g,.35,.5,'#d9c9a0',.2,0,-.4,16);sph(g,.4,'#3c8a50',.2,1.1,-.4);for(let i=0;i<5;i++)sph(g,.22,G('#ffe3a0','#ffcc66',1),-1.2+i*.6,3.0,0)}
-  if(cl.c==0){cyl(g,.35,.6,'#d9c9a0',-1.0,0,-1.5,16);sph(g,.5,'#3c8a50',-1.0,1.3,-1.5);b(g,1.5,.4,.8,'#2a3f6a',.5,0,-1.6);b(g,1.5,.6,.15,'#2a3f6a',.5,.4,-1.95)}
-  if(cl.c==2){const s=label((S.name||'Skystay').toUpperCase(),2.4,.55,'#1a1a24','#e6c46a',46);s.position.set(0,2.4,-2.1);g.add(s);cyl(g,.4,.5,'#d9c9a0',1.2,0,-1.5,16);sph(g,.5,'#3c8a50',1.2,1.2,-1.5)}
+  b(g,CW-.2,.03,2.0,'#8a1f2b',0,0,.5);b(g,1.5,.4,.7,'#2a3f6a',-.4,0,-1.6);b(g,1.5,.6,.15,'#2a3f6a',-.4,.4,-1.95);cyl(g,.3,.55,'#d9c9a0',1.1,0,-1.5,16);sph(g,.45,'#3c8a50',1.1,1.2,-1.5);
+  for(let i=0;i<3;i++)sph(g,.2,G('#ffe3a0','#ffcc66',1),-1.0+i*1.0,3.0,0);
+  if(cl.c==entC){const s=label((S.name||'Skystay').toUpperCase(),2.4,.55,'#1a1a24','#e6c46a',46);s.position.set(0,2.4,-2.1);g.add(s)}
  }
  if(cl.c>0&&false){}
  // status icons
@@ -334,6 +333,7 @@ function mergeStatic(root,skip){
  for(const o of dead){if(o.parent)o.parent.remove(o);if(o.geometry!==BG&&!o.geometry.userData.keep)o.geometry.dispose()}
 }
 function rebuild(){
+ entC=null;for(let c=S.c0;c<S.c1;c++){const x=S.g[0][c];if(x&&x.t=='hall'){entC=c;break}}
  clear(bld);glows.length=0;waters.length=0;
  const tp=tops(),topF={};
  const skipN=[];each(cl=>{const m=cellMesh(cl);m.traverse(o=>{if(o.userData.water)waters.push(o)});if(cl.door)skipN.push(cl.door);bld.add(m);cl.mesh=m;if(cl.f>(topF[cl.c]??-1))topF[cl.c]=cl.f});
@@ -345,7 +345,7 @@ function rebuild(){
  // front fascia per floor slab edge
  each(cl=>{if(cl.f>0){const s=b(bld,CW,.12,.12,'#c9a24a',colX(cl.c),cl.f*FH-.12,DD/2+.0)}});
  // entrance canopy
- {const g=new THREE.Group();g.position.set(colX(0),0,0);b(g,CW*.95,.18,2.2,'#7a1f2b',0,2.65,DD/2+.9);b(g,.1,2.7,.1,'#c9a24a',-CW*.45,0,DD/2+1.9);b(g,.1,2.7,.1,'#c9a24a',CW*.45,0,DD/2+1.9);b(g,2.2,.03,4.2,'#8a1f2b',0,0,DD/2+2.0);const s=label('GRAND ENTRANCE',2.4,.34,'#2a1418','#ffd88a',28);s.position.set(0,2.95,DD/2+1.95);g.add(s);for(const sx of[-1,1]){cyl(g,.05,1.7,'#222',sx*1.45,0,DD/2+3.2,6);sph(g,.15,G('#ffe9b0','#ffd070',1),sx*1.45,1.8,DD/2+3.2)}bld.add(g)}
+ if(entC!=null){const g=new THREE.Group();g.position.set(colX(EC()),0,0);b(g,CW*.95,.18,2.2,'#7a1f2b',0,2.65,DD/2+.9);b(g,.1,2.7,.1,'#c9a24a',-CW*.45,0,DD/2+1.9);b(g,.1,2.7,.1,'#c9a24a',CW*.45,0,DD/2+1.9);b(g,2.2,.03,4.2,'#8a1f2b',0,0,DD/2+2.0);const s=label('GRAND ENTRANCE',2.4,.34,'#2a1418','#ffd88a',28);s.position.set(0,2.95,DD/2+1.95);g.add(s);for(const sx of[-1,1]){cyl(g,.05,1.7,'#222',sx*1.45,0,DD/2+3.2,6);sph(g,.15,G('#ffe9b0','#ffd070',1),sx*1.45,1.8,DD/2+3.2)}bld.add(g)}
  // extended scenery along the whole plot
  {let q=0;const sr=n=>{q=(q*9301+49297+n*131)%233280;return q/233280};for(let x=Math.floor((X0()-30)/8)*8;x<=X1()+30;x+=8){if(x>=-24&&x<=48)continue;const g=new THREE.Group();g.position.set(x,-.3,DD/2+3.0);cyl(g,.07,3.0,'#222',0,0,0,6);sph(g,.22,G('#ffe9b0','#ffd070',1),0,3.1,0);bld.add(g);const h=new THREE.Group();h.position.set(x+3,-.3,DD/2+1);sph(h,.5,'#3f8a4a',0,.3,0);bld.add(h);if(sr(x)<.5){const t=new THREE.Group();t.position.set(x+4,-.3,-8-sr(x+1)*50);cyl(t,.35,2.4,'#6b4a2a',0,0,0,6);sph(t,1.7,crownMats[0],0,3.4,0);sph(t,1.2,crownMats[1],.9,3.0,.4);bld.add(t)}}}
  // land boundary markers and for-sale signs
@@ -451,7 +451,7 @@ function mv(p,dt){
 function face(p,a,dt){let da=a-p.m.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));p.m.rotation.y+=da*Math.min(1,dt*8)}
 function goto(p,f,x,z){const pre=p.inRoom!=null?[{x:colX(p.inRoom)+DX,z:.55},{x:colX(p.inRoom)+DX,z:LZ}]:[];const r=route(p,f,x,z);if(r){p.path=pre.concat(r);p.inRoom=null}return !!r}
 let srC=null,srT=0;const staffRoom=()=>{const n=performance.now();if(n-srT>400){srT=n;srC=null;each(x=>{if(!srC&&x.t=='staffroom'&&!x.br)srC=x})}return srC};
-const homeXZ=p=>{const r=(p.role=='maid'||p.role=='eng')?staffRoom():null,i=(p.idx||0)+(p.role=='eng'?2:0);if(r)return{f:r.f,x:colX(r.c)+((i%4)*.6-.9),z:.55+(Math.floor(i/4)%3)*.45};return{f:0,x:colX(1)+(i%4)*.55-.5,z:LZ+.35+(Math.floor(i/4)%8)*.4}};
+const homeXZ=p=>{const r=(p.role=='maid'||p.role=='eng')?staffRoom():null,i=(p.idx||0)+(p.role=='eng'?2:0);if(r)return{f:r.f,x:colX(r.c)+((i%4)*.6-.9),z:.55+(Math.floor(i/4)%3)*.45};return{f:0,x:colX(EC()+1)+(i%4)*.55-.5,z:LZ+.35+(Math.floor(i/4)%8)*.4}};
 
 // ---------- staff ----------
 function sync(){
@@ -459,7 +459,7 @@ function sync(){
  
  for(const r in ST){
   const arr=S.pp.filter(p=>p.role==r),want=S.staff[r];
-  while(arr.length<want){const h=lookOf(false);h.shirt=ST[r].sh;h.fem=r=='maid'?true:Math.random()<.5;h.bag=false;h.skirt=r=='maid'?'#2d4a7a':ST[r].sh;if(r=='rec')h.pants='#1f2a5a';const p=addP(r,h,colX(0),0,LZ+1.6);p.f=0;p.sp=2.6;S.pp.push(p);arr.push(p);p.path=[{x:colX(1)+arr.length*.4,z:LZ}]}
+  while(arr.length<want){const h=lookOf(false);h.shirt=ST[r].sh;h.fem=r=='maid'?true:Math.random()<.5;h.bag=false;h.skirt=r=='maid'?'#2d4a7a':ST[r].sh;if(r=='rec')h.pants='#1f2a5a';const p=addP(r,h,colX(EC()),0,LZ+1.6);p.f=0;p.sp=2.6;S.pp.push(p);arr.push(p);p.path=[{x:colX(EC()+1)+arr.length*.4,z:LZ}]}
   while(arr.length>want){const p=arr.pop();if(p.job){p.job.claim=null}rmP(p);S.pp.splice(S.pp.indexOf(p),1)}
   arr.forEach((p,i)=>p.idx=i);
  }
@@ -491,7 +491,7 @@ function staffAI(p,dt){
 }
 
 // ---------- guests ----------
-const qBase=()=>{const d=desks()[0];return(d?colX(d.c)-1.9:colX(2))};
+const qBase=()=>{const d=desks()[0];return(d?colX(d.c)-1.9:colX(EC()+2))};
 function freeDesk(){const ds=desks();for(let i=0;i<ds.length;i++){const d=ds[i];if(d.br||d.busy)continue;const r=S.pp.find(p=>p.role=='rec'&&p.idx==i);if(r&&r.stat)return d}return null}
 function pickRoom(vip){
  const L=[];each(x=>{if(isRoom(x)&&!x.occ&&!x.dirty&&!x.br&&!x.res&&reach(x.f))L.push(x)});if(!L.length)return null;
@@ -499,20 +499,21 @@ function pickRoom(vip){
  const order=vip?['penthouse','suite','room']:['room','suite','penthouse'];
  for(const t of order){const a=pr(t);if(a.length)return rnd(a)}return L[0]}
 function spawnGuest(){
+ if(entC==null)return;
  const vip=stars()>=2.5&&Math.random()<.14,look=lookOf(vip);
  let nPend=S.q.length+S.gs.filter(g=>g.st=='enter').length;if(nPend>9)return;
  const car=Math.random()<(vip?1:(working('valet')?.75:.4));
- if(car){const v=mkCar(vip?'limo':rnd(['taxi','sedan','sedan']),-30,DD/2+7.2,1);v.drop={look,vip};v.stopX=colX(0)-1.3;S.veh.push(v)}
- else makeGuest(look,vip,-14,DD/2+4.4)}
+ if(car){const v=mkCar(vip?'limo':rnd(['taxi','sedan','sedan']),colX(EC())-30,DD/2+7.2,1);v.drop={look,vip};v.stopX=colX(EC())-1.3;S.veh.push(v)}
+ else makeGuest(look,vip,colX(EC())-14,DD/2+4.4)}
 function makeGuest(look,vip,x,z){
  const p=addP('g',look,x,0,z);p.vip=vip;p.st='enter';p.wt=0;S.gs.push(p);
- p.path=[{x:colX(0)+.2,z:DD/2+4.4},{x:colX(0)+.2,z:LZ+.3}];return p}
+ p.path=[{x:colX(EC())+.2,z:DD/2+4.4},{x:colX(EC())+.2,z:LZ+.3}];return p}
 function leaveG(p,why){
  const i=S.q.indexOf(p);if(i>=0)S.q.splice(i,1);if(p.desk){p.desk.busy=null;p.desk=null}if(p.room){p.room.res=false;p.room=null}
  if(why=='queue')addReview(p.look,1+(Math.random()<.4?1:0),'I waited over '+Math.round(p.wt)+' seconds at reception and gave up. Hire more receptionists or build more desks!',true);
  else if(why=='norec')addReview(p.look,1,'There was no reception desk to check in at.',true);
  else if(why=='full'){S.lost++;toast('A guest left — no clean rooms free!','bad')}
- p.st='exit';p.m.rotation.y=-1.2;p.path=[{x:colX(0)+.2,z:DD/2+4.4},{x:-18,z:DD/2+4.4}];p.f=0}
+ p.st='exit';p.m.rotation.y=-1.2;p.path=[{x:colX(EC())+.2,z:DD/2+4.4},{x:colX(EC())-18,z:DD/2+4.4}];p.f=0}
 function guestAI(p,dt){
  const done=mv(p,dt);
  switch(p.st){
@@ -532,7 +533,7 @@ function guestAI(p,dt){
     r.res=true;p.room=r;p.st='toroom';p.m.rotation.y=0;const pts=route(p,r.f,colX(r.c),LZ);if(!pts){r.res=false;leaveG(p,'full');break}pts.push({x:colX(r.c)+DX,z:.55},{x:colX(r.c)-.3,z:-.2});p.path=pts}break}
   case 'toroom':if(done){const r=p.room;r.res=false;r.occ={vip:p.vip,look:p.look,wait:p.wt,nights:1+Math.floor(Math.random()*3),stay:0,inD:S.day,price:T[r.t].p+upBonus(r)};r.occ.stay=r.occ.nights;S.gs.splice(S.gs.indexOf(p),1);rmP(p);refreshFlags();if(p.vip&&!S.goals.vipSeen){S.goals.vipSeen=1}if(S.alarm)evacRoom(r)}break;
   case 'evac':if(done)p.st='wait';break;
-  case 'wait':{face(p,.4,dt);if(!S.alarm){const r=p.home;if(r)r.evac=null;if(!r||S.g[r.f][r.c]!==r||!r.occ){p.st='exit';p.path=[{x:-18,z:p.z}];break}p.st='ret';p.sp=2.4;p.f=0;p.inRoom=null;if(!goto(p,r.f,colX(r.c)+DX,LZ)){p.st='exit';p.path=[{x:-18,z:p.z}];break}p.path.push({x:colX(r.c)+DX,z:.55},{x:colX(r.c)-.3,z:-.2});r.evac=p}break}
+  case 'wait':{face(p,.4,dt);if(!S.alarm){const r=p.home;if(r)r.evac=null;if(!r||S.g[r.f][r.c]!==r||!r.occ){p.st='exit';p.path=[{x:colX(EC())-18,z:p.z}];break}p.st='ret';p.sp=2.4;p.f=0;p.inRoom=null;if(!goto(p,r.f,colX(r.c)+DX,LZ)){p.st='exit';p.path=[{x:colX(EC())-18,z:p.z}];break}p.path.push({x:colX(r.c)+DX,z:.55},{x:colX(r.c)-.3,z:-.2});r.evac=p}break}
   case 'ret':if(done){const r=p.home;if(r)r.evac=null;S.gs.splice(S.gs.indexOf(p),1);rmP(p)}break;
   case 'exit':if(done){S.gs.splice(S.gs.indexOf(p),1);rmP(p)}break;
  }
@@ -541,7 +542,7 @@ function checkout(r){
  const o=r.occ;r.occ=null;r.dirty=true;r.ds=S.day;
  const pay=Math.round(o.price*o.nights*S.rate*(o.vip?1.6:1));S.money+=pay;S.dayInc+=pay;
  const p=addP('g',o.look,colX(r.c)-.3,r.f,-.2);p.st='exit';p.vip=o.vip;S.gs.push(p);
- p.inRoom=r.c;p.dr=r;goto(p,0,colX(0)+.2,LZ+.3);p.path.push({x:colX(0)+.2,z:DD/2+4.4},{x:-18,z:DD/2+4.4});
+ p.inRoom=r.c;p.dr=r;goto(p,0,colX(EC())+.2,LZ+.3);p.path.push({x:colX(EC())+.2,z:DD/2+4.4},{x:colX(EC())-18,z:DD/2+4.4});
  fx(r.f,colX(r.c),'+$'+pay);
  stayReview(o,r)}
 function fx(f,x,txt){if(S.fx.length>14)return;S.fx.push({x,y:f*FH+2.5,z:0,txt,t:0,el:null})}
@@ -575,7 +576,7 @@ function ignite(cl){cl.fire=0;S.fires.push(cl);addFlames(cl)}
 function startFire(){const L=[];each(x=>{if(!NOFIRE.includes(x.t)){L.push(x);if(x.t=='cafe')L.push(x,x,x)}});if(!L.length)return;
  ignite(rnd(L));S.alarm=true;S.fireT=0;S.fireOutAt=0;S.truck=false;S.nextSpread=8;evacuateAll();
  const a=$('alarm');a.style.display='block';a.textContent=S.sprink?'🚨 FIRE — sprinklers active, evacuating':'🚨 FIRE ALARM — elevators off, use the stairs!';toast('🔥 Fire! Evacuating the hotel','bad');sfx('alarm')}
-function assemble(p){p.ax=colX(0)-3.5-RR(0,5);p.az=DD/2+3.8+RR(0,1.4);return goto(p,0,p.ax,p.az)}
+function assemble(p){p.ax=colX(EC())-3.5-RR(0,5);p.az=DD/2+3.8+RR(0,1.4);return goto(p,0,p.ax,p.az)}
 function evacRoom(r){if(!r.occ||r.evac)return;const p=addP('g',r.occ.look,colX(r.c)-.3,r.f,-.2);p.st='evac';p.inRoom=r.c;p.dr=r;p.home=r;p.sp=3.4;p.vip=r.occ.vip;S.gs.push(p);if(assemble(p))r.evac=p;else{S.gs.pop();rmP(p);r.occ.trapped=true}}
 function evacuateAll(){for(const p of S.gs.slice())if(['enter','q','todesk','serve'].includes(p.st))leaveG(p,'fire');each(r=>{if(isRoom(r)&&r.occ)evacRoom(r)})}
 function extinguish(){let dmg=0;for(const c of S.fires){if(c.fm){c.mesh.remove(c.fm);c.fm=null}if(c.fire>12){c.br=true;c.bs=S.day;dmg++;if(isRoom(c)){c.dirty=true;c.ds=S.day}}c.fire=undefined}
@@ -586,7 +587,7 @@ function extinguish(){let dmg=0;for(const c of S.fires){if(c.fm){c.mesh.remove(c
 function fireUpdate(dt){
  if(!S.fires.length)return;S.fireT+=dt;for(const c of S.fires)c.fire+=dt;
  if(!S.sprink&&S.fireT>S.nextSpread){S.nextSpread=S.fireT+9;const c=rnd(S.fires);const nb=[[c.f,c.c-1],[c.f,c.c+1],[c.f+1,c.c]].filter(a=>a[1]>=S.c0&&a[1]<S.c1&&S.g[a[0]][a[1]]&&S.g[a[0]][a[1]].fire==null&&!NOFIRE.includes(S.g[a[0]][a[1]].t));if(nb.length&&Math.random()<.7){const n=rnd(nb);ignite(S.g[n[0]][n[1]])}}
- if(!S.sprink&&!S.truck&&S.fireT>8){S.truck=true;const v=mkCar('firetruck',-40,DD/2+7.2,1);v.fire=1;v.stopX=colX(0)+4;v.sp=14;S.veh.push(v)}
+ if(!S.sprink&&!S.truck&&S.fireT>8){S.truck=true;const v=mkCar('firetruck',colX(EC())-40,DD/2+7.2,1);v.fire=1;v.stopX=colX(EC())+4;v.sp=14;S.veh.push(v)}
  if(S.sprink&&S.fireT>6){extinguish();return}
  if(S.fireOutAt&&S.fireT>=S.fireOutAt)extinguish()}
 // ---------- vehicles ----------
@@ -606,7 +607,7 @@ function updVeh(dt){
    else v.x+=v.dir*v.sp*dt}
   else if(v.st=='stop'){v.t-=dt;if(v.t<=0)v.st='drive'}
   v.m.position.x=v.x}
- S.veh=S.veh.filter(v=>{if(v.x>Math.max(130,cam.tx+160)||v.x<Math.min(-60,cam.tx-160)){scene.remove(v.m);return false}return true});
+ S.veh=S.veh.filter(v=>{if(v.x>Math.max(130,X1()+100,cam.tx+160)||v.x<Math.min(-60,X0()-100,cam.tx-160)){scene.remove(v.m);return false}return true});
  S.bgc-=dt;if(S.bgc<=0){S.bgc=RR(4,9);const dir=Math.random()<.5?1:-1;const v=mkCar(rnd(['sedan','sedan','taxi']),dir>0?Math.min(-50,cam.tx-100):Math.max(120,cam.tx+100),DD/2+(dir>0?9.6:11.2),dir);v.sp=RR(8,12);S.veh.push(v)}
 }
 
@@ -641,6 +642,7 @@ function newDay(){
  toast('Day '+(S.day-1)+': +$'+Math.round(S.dayInc)+' income · −$'+ex+' costs',ex>S.dayInc);S.dayInc=0;
  save();postScore();maybeLayout(true)}
 const GOALS=[
+ ['Build your Main entrance (Service tab)',()=>cnt('hall')>0,200],
  ['Build 4 rooms',()=>{let n=0;each(x=>{if(x.t=='room')n++});return n>=4},300],
  ['Hire a 2nd receptionist & build 2nd desk',()=>S.staff.rec>=2,400],
  ['Open a café with a waiter',()=>cnt('cafe')>0&&S.staff.wait>0,500],
@@ -680,7 +682,7 @@ function place(f,c){
   if(stars()<d.st){toast('Needs '+d.st+'★','bad');return}
   if(S.money<d.c){toast('Not enough cash ($'+d.c+').','bad');return}
   S.money-=d.c;x.up=x.up||{};x.up[S.tool]=1;fx(f,colX(c),d.n+' added');rebuild();hud();save();return}
- if(S.tool=='bull'){const x=S.g[f]&&S.g[f][c];if(!x){say('Nothing here to remove.');return}if(x.t=='hall'){toast('The lobby cannot be removed.','bad');return}if(f<FL-1&&S.g[f+1][c]){toast('Remove the cell above first.','bad');return}if(x.occ||x.busy||x.res||x.claim||x.fire!=null||x.evac){toast('Busy right now — try again shortly.','bad');return}
+ if(S.tool=='bull'){const x=S.g[f]&&S.g[f][c];if(!x){say('Nothing here to remove.');return}if(f<FL-1&&S.g[f+1][c]){toast('Remove the cell above first.','bad');return}if(x.occ||x.busy||x.res||x.claim||x.fire!=null||x.evac){toast('Busy right now — try again shortly.','bad');return}
   S.money+=Math.round(T[x.t].c*.5);S.g[f][c]=null;sync();rebuild();hud();toast('Removed '+T[x.t].n+' (+50% refund)');return}
  const e=canPlace(S.tool,f,c);if(e){toast(e,'bad');say(e);return}
  S.money-=T[S.tool].c;put(f,c,S.tool);rebuild();sync();hud();toast('Built '+T[S.tool].n);save()}
@@ -722,7 +724,7 @@ function inspect(f,c,set){const x=S.g[f]&&S.g[f][c];const s=x?describe(x):'Empty
 function hover(cx,cy){if(inMenu)return;
  const c=cellAt(cx,cy);hov=c;
  if(!c){hovBox.visible=false;return}
- if(S.tool=='bull'){const x=S.g[c.f][c.c];hovBox.material.color.set(x&&x.t!='hall'?'#e8a33d':'#777')}
+ if(S.tool=='bull'){const x=S.g[c.f][c.c];hovBox.material.color.set(x?'#e8a33d':'#777')}
  else if(S.tool&&T[S.tool].upg){const x=S.g[c.f][c.c];hovBox.material.color.set(x&&isRoom(x)&&!(x.up&&x.up[S.tool])&&!(T[S.tool].only&&x.t=='room')?'#58c27d':'#e8594f')}
  else if(S.tool){hovBox.material.color.set(canPlace(S.tool,c.f,c.c)?'#e8594f':'#58c27d')}
  else{inspect(c.f,c.c);hovBox.visible=false;return}
@@ -762,7 +764,7 @@ $('bst').onclick=showStaff;$('brv').onclick=showRev;
 [0,1,2,3].forEach(i=>$('b'+i).onclick=()=>{S.speed=i;[0,1,2,3].forEach(j=>$('b'+j).classList.toggle('on',j==i))});
 const doExpand=side=>{if(S.spec)return;const c=expCost();if(S.money<c){toast('This land plot costs $'+c.toLocaleString(),'bad');return}S.money-=c;if(side<0){S.c0-=PW;cam.tx=Math.min(cam.tx,(S.c0+S.c1)*CW/2)}else{S.c1+=PW;cam.tx=Math.max(cam.tx,(S.c0+S.c1)*CW/2)}rebuild();updateGhosts();hud();save();toast('🏞️ Land plot bought on the '+(side<0?'left':'right')+'! You now own '+(S.c1-S.c0)+' lots of building space.')};
 $('bex').onclick=()=>doExpand(1);$('bexl').onclick=()=>doExpand(-1);
-function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Land</b>: use the Buy land buttons to purchase a whole plot of 6 lots on the left or right. Each plot costs more than the last, and you can keep buying as long as you have the money — build separate towers on each.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
+function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Main entrance</b>: nothing is built for you. Start in the Service tab: build a Main entrance on the ground floor first, because guests only arrive once it exists. Then add a reception, rooms and staff.','<b>Land</b>: use the Buy land buttons to purchase a whole plot of 6 lots on the left or right. Each plot costs more than the last, and you can keep buying as long as you have the money — build separate towers on each.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
 $('bhp').onclick=showHelp;
 $('bzi').onclick=()=>cam.r=clamp(cam.r*.85,10,400);$('bzo').onclick=()=>cam.r=clamp(cam.r*1.18,10,400);
 addEventListener('keydown',e=>{if(e.key=='Escape'){S.tool=null;renderTabs();renderItems();say('Browsing.')}});
@@ -874,7 +876,7 @@ function openLB(){$('mlb').classList.add('show');renderLB()}
 const hasSave=()=>{try{return !!localStorage.getItem(KEY)}catch(e){return false}};
 function resetWorld(){if(LB.specUnsub){LB.specUnsub();LB.specUnsub=null}$('spec').style.display='';document.body.classList.remove('spec');clear(peopleG);for(const k in cars)delete cars[k];if(S){for(const v of S.veh)scene.remove(v.m);for(const f of S.fx)if(f.el)f.el.remove()}clear(ghostG);$('alarm').style.display='none'}
 function demoHotel(){S.rs=[5,5,4,5,4];S.money=1e6;S.hour=17;S.c1=10;const L=(f,c,t)=>{if(!S.g[f][c])put(f,c,t)};
- L(0,3,'elev');L(1,3,'elev');L(0,4,'reception');L(0,5,'laundry');L(0,6,'cafe');L(0,7,'shop');L(0,8,'reception');L(0,9,'stairs');L(1,9,'stairs');L(2,9,'stairs');L(3,9,'stairs');L(2,3,'elev');L(3,3,'elev');
+ L(0,0,'hall');L(0,1,'hall');L(0,2,'hall');L(0,3,'elev');L(1,3,'elev');L(0,4,'reception');L(0,5,'laundry');L(0,6,'cafe');L(0,7,'shop');L(0,8,'reception');L(0,9,'stairs');L(1,9,'stairs');L(2,9,'stairs');L(3,9,'stairs');L(2,3,'elev');L(3,3,'elev');
  for(let c=4;c<=8;c++){L(1,c,c==4?'room':'suite');L(2,c,'suite')}
  L(3,4,'gym');L(3,5,'spa');L(3,6,'pool');L(3,7,'penthouse');L(3,8,'penthouse');
  each(x=>{if(x.t=='suite')x.up=x.c%2?{minibar:1}:{balcony:1,jacuzzi:1};else if(isRoom(x))x.up={minibar:1}});
