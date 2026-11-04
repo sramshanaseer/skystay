@@ -121,6 +121,7 @@ const T={
  reception:{n:'Reception',e:'🛎️',c:600,u:10,l:0,cat:'Service',st:0,wall:'#cdbb91',d:'A desk for one receptionist. Ground floor.'},
  laundry:{n:'Laundry',e:'🧺',c:800,u:12,l:2,cat:'Service',st:0,wall:'#9ec6d8',d:'Faster cleaning and fresh sheets.'},
  valet:{n:'Valet parking',e:'🚗',c:1400,u:16,l:0,cat:'Service',st:0,wall:'#3a3f4b',d:'Valet stand. More guests arrive by car, they tip, and reviews improve. Ground floor.'},
+ helpdesk:{n:'Help desk',e:'🎧',c:600,u:8,l:0,cat:'Service',st:0,wall:'#7d8fa8',d:'Staff report problems here — missing desks, unreachable floors, too many dirty rooms. Tap it to read the reports. Any floor.'},
  staffroom:{n:'Staff room',e:'🛋️',c:1000,u:14,l:2,cat:'Service',st:0,wall:'#b9a98c',d:'A break room for employees. Idle maids and engineers rest here, and rested staff work 25% faster. Any floor.'},
  shop:{n:'Gift shop',e:'🎁',c:900,u:10,l:2,cat:'Service',st:.5,wall:'#e6a5c0',d:'Guests spend money. Any floor.'},
  cafe:{n:'Café',e:'☕',c:1200,u:15,l:2,cat:'Food',st:.5,wall:'#d98b5f',d:'Needs a waiter. Earns at mealtimes. Any floor.'},
@@ -186,7 +187,7 @@ const isRoom=x=>x.t=='room'||x.t=='suite'||x.t=='penthouse',stars=()=>S.rs.reduc
 const cnt=t=>{let n=0;each(x=>{if(x.t==t)n++});return n},working=t=>{let n=0;each(x=>{if(x.t==t&&!x.br)n++});return n};
 function put(f,c,t){if(f+2>FL)FL=f+2;S.g[f][c]={t,f,c,occ:null,dirty:false,br:false,res:false,claim:null,busy:null,ds:0,bs:0,icons:null}}
 function fresh(){
- S={sf:{},hn:{},money:10000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
+ S={iss:{},sf:{},hn:{},money:10000,day:1,hour:8,acc:0,speed:1,c0:0,c1:12,lots:{0:1,1:1},m0:new Date().getMonth(),rate:1,rs:[2,2,2,2,2],staff:{rec:0,maid:0,wait:0,eng:0},g:mkg(),reviews:[],tool:null,tab:'Rooms',goals:{},dayInc:0,dayExp:0,pp:[],gs:[],q:[],veh:[],fx:[],lost:0,bgc:0,spawnT:0,name:'Skystay',mode:'single',fires:[],alarm:false,fireT:0,fireOutAt:0,truck:false,nextSpread:0};
  FL=10;
 }
 function tops(k){k=k||'elev';const t={};for(let c=S.c0;c<S.c1;c++){if(S.g[0][c]&&S.g[0][c].t==k){let f=0;while(S.g[f+1][c]&&S.g[f+1][c].t==k)f++;t[c]=f}}return t}
@@ -254,6 +255,12 @@ function cellMesh(cl){
   b(g,2.9,.1,1.3,'#1f3a6b',0,2.2,1.2);cyl(g,.05,2.2,'#ccc',-1.35,0,1.8,6);cyl(g,.05,2.2,'#ccc',1.35,0,1.8,6);
   cone(g,.16,.45,'#ff7a1a',1.0,0,1.2,8);cone(g,.16,.45,'#ff7a1a',-1.0,0,1.5,8);b(g,.5,.16,.3,'#d9d9e0',.9,.6,-1.2);
   const s=label('VALET',1.2,.4,'#0f2547','#ffe39a',44);s.position.set(0,2.62,-2.1);g.add(s);
+ }else if(t=='helpdesk'){
+  b(g,2.9,.03,3.2,'#5f6f86',0,0,.2);
+  b(g,2.0,.9,.7,'#3f5f8f',0,0,-1.5);b(g,2.1,.08,.8,'#e9eef7',0,.9,-1.5);b(g,.7,.5,.06,'#111',-.4,1.0,-1.55);b(g,.62,.4,.02,G('#9fd0ff','#6ab0ff',.6),-.4,1.05,-1.52);
+  b(g,.35,.12,.3,'#222',.55,.98,-1.4);cyl(g,.05,.1,'#d33',.55,1.12,-1.4,8);b(g,.5,.06,.4,'#f4d35e',-.9,.98,-1.2);
+  b(g,.55,.5,.5,'#2a2f3a',0,0,-.7);b(g,.5,.08,.5,'#2a2f3a',0,.5,-.7);
+  const s=label('HELP DESK',1.4,.4,'#14325a','#bfe0ff',40);s.position.set(0,2.2,-2.1);g.add(s);
  }else if(t=='staffroom'){
   b(g,2.9,.03,3.2,'#6b5a45',0,0,.2);
   b(g,1.4,.4,.65,'#4a6fa5',-.8,0,-1.65);b(g,1.4,.5,.15,'#3d5d8f',-.8,.4,-1.95);b(g,.15,.55,.65,'#3d5d8f',-1.5,0,-1.65);b(g,.15,.55,.65,'#3d5d8f',-.1,0,-1.65);
@@ -628,7 +635,7 @@ function updVeh(dt){
 // ---------- game logic ----------
 function toast(t,bad){if(S.spec)return;sfx(bad?'bad':'ding');const tc=$('toast');while(tc.children.length>=3)tc.firstChild.remove();const e=document.createElement('div');e.className='t'+(bad?' bad':'');e.textContent=t;$('toast').appendChild(e);setTimeout(()=>e.remove(),3500)}
 const say=t=>$('msg').textContent=t;
-function tick(){
+function tick(){staffIssues();
  S.hour=(S.hour+1)%24;if(S.hour==0)newDay();
  const h=S.hour,st=stars();let occN=0,rooms=0,vac=0;
  each(x=>{if(isRoom(x)){rooms++;if(x.occ)occN++;else if(!x.dirty&&!x.br&&!x.res&&reach(x.f))vac++}});
@@ -734,7 +741,7 @@ cv.addEventListener('wheel',e=>{e.preventDefault();cam.r=clamp(cam.r*(1+e.deltaY
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 function click(f,c){if(!S.spec&&f>=0&&f<3&&!S.lots[lotOf(c)]){askBuy(lotOf(c));return}hideBuy();if(S.tool){place(f,c)}else inspect(f,c,true)}
 function describe(x){let s=T[x.t].n;if(isRoom(x)){s+=x.occ?' — '+x.occ.look.name+(x.occ.vip?' (VIP)':'')+', '+x.occ.stay+' night'+(x.occ.stay>1?'s':'')+' left':x.dirty?' — dirty':x.br?' — broken':' — vacant'}else if(x.br)s+=' — broken';if(x.t=='reception'){s+=' — '+(S.pp.some(p=>p.role=='rec'&&p.stat&&desks()[p.idx]===x)?'staffed':'no receptionist')}if(x.t=='cafe')s+=S.pp.some(p=>p.role=='wait'&&cafes()[p.idx]===x)?' — waiter on duty':' — needs a waiter';return s}
-function inspect(f,c,set){const x=S.g[f]&&S.g[f][c];if(set&&x&&x.t=='hall'&&f==0&&!S.spec){let e=c;while(S.g[0][e-1]&&S.g[0][e-1].t=='hall')e--;if(ents.includes(e)){askHotelName(e);return}}const s=x?describe(x):'Empty cell (floor '+(f+1)+')';$('info').textContent=s;if(set)say(s)}
+function inspect(f,c,set){const x=S.g[f]&&S.g[f][c];if(set&&x&&x.t=='helpdesk'&&!S.spec){showHelp(hotelCol(c)??0);return}if(set&&x&&x.t=='hall'&&f==0&&!S.spec){let e=c;while(S.g[0][e-1]&&S.g[0][e-1].t=='hall')e--;if(ents.includes(e)){askHotelName(e);return}}const s=x?describe(x):'Empty cell (floor '+(f+1)+')';$('info').textContent=s;if(set)say(s)}
 function hover(cx,cy){if(inMenu)return;
  const c=cellAt(cx,cy);hov=c;
  if(!c){hovBox.visible=false;return}
@@ -761,6 +768,48 @@ function envUpdate(force){
  for(const m of glows)m.emissiveIntensity=nightF*.95*(m.userData.mul||1)+(.08*(m.userData.mul||1));
 }
 // ---------- UI modals ----------
+// ---------- help desk: staff report problems ----------
+const hotelsList=()=>ents.length?ents:[0];
+const hasHelp=h=>{let ok=false;each(x=>{if(x.t=='helpdesk'&&!x.br&&hOf(x)===h)ok=true});return ok};
+let issT=0,hintedNoHelp={};
+function bubble(p,txt){if(!p||!p.m)return;if(p.bub){p.m.remove(p.bub);p.bub=null}
+ const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.fillStyle='#fffbe8';x.strokeStyle='#3a2a10';x.lineWidth=8;x.beginPath();x.roundRect?x.roundRect(6,6,500,100,28):x.rect(6,6,500,100);x.fill();x.stroke();
+ x.fillStyle='#3a2a10';let fs=46;x.font='bold '+fs+'px system-ui,sans-serif';while(x.measureText(txt).width>470&&fs>16){fs-=2;x.font='bold '+fs+'px system-ui,sans-serif'}x.textAlign='center';x.textBaseline='middle';x.fillText(txt,256,58);
+ const tx=new THREE.CanvasTexture(c),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,depthTest:false}));sp.scale.set(2.6,.65,1);sp.position.y=2.35;sp.renderOrder=6;p.m.add(sp);p.bub=sp;
+ setTimeout(()=>{if(p.m&&p.bub===sp){p.m.remove(sp);p.bub=null}tx.dispose();sp.material.dispose()},7000)}
+function findIssues(){
+ const out={};const hs=hotelsList();
+ for(const h of hs){
+  const st=r=>S.pp.filter(p=>p.role==r&&p.h===h).length;
+  const rec=st('rec'),maid=st('maid'),wait=st('wait'),eng=st('eng'),nd=desksOf(h).length,nc=cafes().filter(x=>(hotelCol(x.c)??0)===h).length;
+  let dirty=0,brk=0,unr=null,unrB=null,rooms=0,sr=false;
+  each(x=>{if(hOf(x)!==h)return;if(x.t=='staffroom')sr=true;if(isRoom(x)){rooms++;if(x.dirty&&!x.occ){dirty++;if(!reach(x.f)&&unr==null)unr=x.f}}if(x.br&&!(isRoom(x)&&(x.occ||x.res))){brk++;if(!reach(x.f)&&unrB==null)unrB=x.f}});
+  const add=(k,role,short,long,fix)=>{out[h+':'+k]={h,role,short,long,fix}};
+  if(rec>nd)add('nodesk','rec','I have no desk!','Receptionist: there are more of us than desks — some have nowhere to work.','Build another Reception desk.');
+  if(wait>nc)add('nocafe','wait','No café to serve!','Waiter: I have no café to work in.','Build a Café, or hire fewer waiters.');
+  if(maid>0&&unr!=null)add('unrM','maid','I can’t reach floor '+(unr+1)+'!','Maid: there are dirty rooms on floor '+(unr+1)+' that I can’t get to.','Build an elevator (or stairs) up to that floor.');
+  if(eng>0&&unrB!=null)add('unrE','eng','Can’t reach floor '+(unrB+1)+'!','Engineer: something is broken on floor '+(unrB+1)+' and I can’t get there.','Build an elevator up to that floor.');
+  if(maid>0&&dirty>3*maid)add('manyM','maid','Too many dirty rooms!','Maid: '+dirty+' dirty rooms and only '+maid+' of us.','Hire more maids.');
+  if(maid==0&&rooms>0&&dirty>0&&rec>0)add('nomaid','rec','Rooms dirty, no maid!','Receptionist: '+dirty+' room(s) are dirty and this hotel has no maid.','Hire a maid for this hotel (Staff).');
+  if(eng>0&&brk>2*eng)add('manyE','eng','Too much to fix!','Engineer: '+brk+' things are broken and only '+eng+' of us.','Hire more engineers.');
+  if(eng==0&&brk>0&&maid+rec>0)add('noeng','maid','Things are broken!','Maid: '+brk+' thing(s) are broken and this hotel has no engineer.','Hire an engineer for this hotel (Staff).');
+  if(maid+eng>=3&&!sr)add('noroom','maid','We need a break room!','Maid: with this many of us we need somewhere to rest.','Build a Staff room (+25% work speed).');
+  const q=S.q.filter(g=>g.eh===h).length;if(q>=5)add('queue','rec','Long queue!','Receptionist: '+q+' guests are waiting at the desk.','Hire more receptionists and build more desks.');
+ }
+ return out}
+function staffIssues(){
+ if(S.spec||inMenu)return;const n=performance.now();if(n-issT<3000)return;issT=n;
+ const now=findIssues(),old=S.iss||{};const nxt={};
+ for(const k in now){const v=now[k],h=v.h;
+  if(hasHelp(h)){nxt[k]=Object.assign({at:old[k]?old[k].at:S.day},v);if(!old[k]){const who=S.pp.find(p=>p.role==v.role&&p.h===h)||S.pp.find(p=>p.h===h);bubble(who,v.short);toast('🎧 '+(ents.length>1?hotelName(h)+' — ':'')+v.long.replace(/^[A-Za-z]+: /,ST[v.role].n+': '),true)}}
+  else if(!hintedNoHelp[h]&&S.pp.some(p=>p.h===h)){hintedNoHelp[h]=1;const who=S.pp.find(p=>p.role==v.role&&p.h===h);bubble(who,'😕 '+v.short);toast('😕 Your staff have a problem but no Help desk to report it to. Build one under Service.',true)}}
+ for(const k in old)if(!now[k]&&hasHelp(old[k].h))toast('✅ Solved: '+old[k].short.replace(/!$/,''));
+ S.iss=nxt}
+function showHelp(h){
+ const list=Object.values(S.iss||{}).filter(v=>!ents.length||v.h===h);
+ const ttl=ents.length>1?' — '+hotelName(h).replace(/[<>&]/g,''):'';
+ $('cst').innerHTML='<h2>🎧 Help desk'+ttl+'</h2>'+(list.length?list.map(v=>`<div class="row"><div style="font-size:26px">${ST[v.role].e}</div><div class="g"><b>${v.long.replace(/[<>&]/g,'')}</b><br><small>💡 ${v.fix} · since day ${v.at}</small></div></div>`).join(''):'<div class="row"><div style="font-size:26px">✅</div><div class="g"><b>All quiet</b><br><small>No problems reported by your staff right now.</small></div></div>')+'<div class="row"><div class="g"></div><button id="cl">Close</button></div>';
+ $('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
 let staffH=null;
 function showStaff(){
  const hs=ents.length?ents:[0];if(staffH==null||!hs.includes(staffH))staffH=hs[0];const e=staffH,sf=sfOf(e),multi=ents.length>1;
@@ -825,7 +874,7 @@ function showLand(){
  const cl=document.createElement('div');cl.style.cssText='text-align:right;margin-top:10px';const cb=document.createElement('button');cb.textContent='Close';cb.onclick=()=>$('mst').classList.remove('show');cl.appendChild(cb);box.appendChild(cl);
  $('mst').classList.add('show')}
 $('bex').onclick=()=>{landOff=null;showLand()};
-function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Main entrance</b>: nothing is built for you. Start in the Service tab: build a Main entrance on the ground floor first, because guests only arrive once it exists. Then add a reception, rooms and staff.','<b>Land</b>: tap 🏞️ Land to see the map of lots. You can buy any lot anywhere — next to your hotel or far away — and each lot is 6 building cells wide. Each lot costs more than the last. Tap one of your own lots to fly the camera there.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
+function showHelp(){$('cst').innerHTML='<h2>🏨 How to play</h2>'+['<b>Build</b>: pick a tab at the bottom, choose an item, tap a glowing cell. Rooms go on upper floors, reception, laundry, café and shop on the ground floor.','<b>Elevators</b> stack from the lobby upward. Rooms need a shaft that reaches their floor.','<b>Staff</b>: every reception desk needs its own receptionist. Hire maids, a waiter per café and engineers in 👥 Staff.','<b>Upgrades</b>: add a minibar, balcony or jacuzzi to rooms for extra income. ⚡ Express motors speed up lifts.','<b>Fire safety</b>: fires start at random. The alarm turns elevators off, so everyone leaves by <b>stairs</b>. Build a stair shaft on every tower, or guests on upper floors get trapped. 🚿 Sprinklers put fires out fast.','<b>Main entrance</b>: nothing is built for you. Start in the Service tab: build a Main entrance on the ground floor first, because guests only arrive once it exists. Then add a reception, rooms and staff.','<b>Land</b>: tap 🏞️ Land to see the map of lots. You can buy any lot anywhere — next to your hotel or far away — and each lot is 6 building cells wide. Each lot costs more than the last. Tap one of your own lots to fly the camera there.','<b>Staff room</b>: build one on any floor — idle maids and engineers rest there and work 25% faster.','<b>Help desk</b> (Service tab): staff tell you about problems — no desk, a floor they can’t reach, too many dirty rooms. A speech bubble pops up over them. Tap the desk to read all reports.','<b>Reviews</b> follow what really happens: queues, dirty rooms, breakdowns, price. Keep them high to unlock the suite, spa, pool and penthouse.','<b>Camera</b>: drag to orbit, scroll or pinch to zoom, shift-drag to pan.'].map(t=>'<div class="row"><div class="g">'+t+'</div></div>').join('')+'<div class="row"><div class="g"></div><button id="cl">Let\'s go</button></div>';$('cl').onclick=()=>$('mst').classList.remove('show');$('mst').classList.add('show')}
 $('bhp').onclick=showHelp;
 $('bzi').onclick=()=>cam.r=clamp(cam.r*.85,10,400);$('bzo').onclick=()=>cam.r=clamp(cam.r*1.18,10,400);
 addEventListener('keydown',e=>{if(e.key=='Escape'){S.tool=null;renderTabs();renderItems();say('Browsing.')}});
