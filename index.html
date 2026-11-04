@@ -507,10 +507,11 @@ function staffAI(p,dt){
   if(p.st=='go'&&done){p.st='work';p.t=(p.role=='maid'?(working('laundry')?1.6:3.2):3.6)*(working('staffroom')?.75:1);face(p,0,1)}
   else if(p.st=='work'){face(p,0,dt);p.m.position.y=p.y+Math.abs(Math.sin(p.t*8))*.04;p.t-=dt;if(p.t<=0){if(p.role=='maid'){j.dirty=false}else{j.br=false}j.claim=null;p.job=null;p.st='';S.dayInc+=0;refreshFlags();const h=homeXZ(p);goto(p,h.f,h.x,h.z)}}
   return}
- if(done||!p.path.length){
+ p.jt=(p.jt||0)-dt;
+ if(done||!p.path.length||(p.jt<=0&&Number.isInteger(p.f))){p.jt=.25;
   const j=pickJob(p,p.role=='maid'?(x=>isRoom(x)&&x.dirty&&!x.occ&&hOf(x)===p.h):(x=>x.br&&!(isRoom(x)&&(x.occ||x.res))&&hOf(x)===p.h));
   if(j){j.claim=p;p.job=j;p.st='go';const rm=isRoom(j);if(!goto(p,j.f,rm?colX(j.c)+DX:colX(j.c)+(p.role=='eng'?.5:-.4),rm?LZ:.9)){j.claim=null;p.job=null;p.st=''}else if(rm){p.dr=j;p.path.push({x:colX(j.c)+DX,z:.55},{x:colX(j.c)+(p.role=='eng'?.4:-.3),z:-.3});p.inRoom=j.c}}
-  else{const h=homeXZ(p);if(Math.hypot(h.x-p.x,h.z-p.z)>.2||p.f!=h.f)goto(p,h.f,h.x,h.z);else face(p,0,dt)}
+  else if(done||!p.path.length){const h=homeXZ(p);if(Math.hypot(h.x-p.x,h.z-p.z)>.2||p.f!=h.f)goto(p,h.f,h.x,h.z);else face(p,0,dt)}
  }
 }
 
